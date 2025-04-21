@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Elections";
+    Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
+}
+
+<h2 class="mb-4">Manage Elections</h2>
+
+<div class="d-flex justify-content-between mb-3">
+    <h5>Election Events</h5>
+    <a href="/AdminView/AddElection" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Add New Election
+    </a>
+</div>
+
+<ul class="nav nav-tabs" id="electionTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="awaiting-tab" data-bs-toggle="tab" data-bs-target="#awaiting" type="button" role="tab">Awaiting</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="inprogress-tab" data-bs-toggle="tab" data-bs-target="#inprogress" type="button" role="tab">In Progress</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed</button>
+    </li>
+</ul>
+
+<div class="tab-content pt-3">
+    <div class="tab-pane fade show active" id="awaiting" role="tabpanel">
+        <p>No awaiting elections.</p>
+    </div>
+    <div class="tab-pane fade" id="inprogress" role="tabpanel">
+        <div class="card">
+            <div class="card-body">
+                <h5>BPSU SSC Elections 2025</h5>
+                <p>Start Date: April 15</p>
+                <div>
+                    <a href="/AdminView/EditElection/1" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a href="/AdminView/StopElection/1" class="btn btn-sm btn-outline-danger">Stop</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="completed" role="tabpanel">
+        <p>No completed elections yet.</p>
+    </div>
+</div>

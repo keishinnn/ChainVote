@@ -1,0 +1,78 @@
+﻿@* Views/AdminView/Candidates.cshtml *@
+@{
+    ViewData["Title"] = "Candidates";
+    Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
+}
+
+<h2 class="mb-4">Manage Candidates</h2>
+
+<div class="mb-4">
+    <h5>Voters Eligible to Become Candidates</h5>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Jane Smith</td>
+                <td>jane@example.com</td>
+                <td>
+                    <a href="/AdminView/MakeCandidate/1" class="btn btn-sm btn-warning">Make Candidate</a>
+                </td>
+            </tr>
+            <!-- More rows -->
+        </tbody>
+    </table>
+</div>
+
+<div class="mb-4">
+    <h5>Candidates Ready for Deployment</h5>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Election</th>
+                <th>Position</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Carlos Reyes</td>
+                <td>SSC 2025</td>
+                <td>President</td>
+                <td>
+                    <a href="/AdminView/DeployCandidate/1" class="btn btn-sm btn-success">Deploy</a>
+                </td>
+            </tr>
+            <!-- More rows -->
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <h5>Deployed Candidates</h5>
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Party List</th>
+                <th>Position</th>
+                <th>Election</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Ana Cruz</td>
+                <td>Blue Phoenix</td>
+                <td>Vice President</td>
+                <td>SSC 2025</td>
+            </tr>
+            <!-- More rows -->
+        </tbody>
+    </table>
+</div>

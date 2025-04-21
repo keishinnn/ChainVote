@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Contents";
+    Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
+}
+
+<h2 class="mb-4">Edit Partylist Contents</h2>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    <!-- Example Partylist Card -->
+    <div class="col">
+        <div class="card shadow-sm h-100">
+            <img src="/images/partylists/sample-partylist.png" class="card-img-top" alt="Partylist Logo">
+            <div class="card-body">
+                <h5 class="card-title">Partylist Name</h5>
+                <p class="card-text">Agenda: Free tuition, more student activities, and transparent leadership.</p>
+                <a href="/AdminView/EditPartylist/1" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-pencil-square me-1"></i>Edit Partylist
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add more cards dynamically per partylist -->
+</div>

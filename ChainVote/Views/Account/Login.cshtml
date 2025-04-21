@@ -1,0 +1,56 @@
+﻿@model ChainVote.Models.Authentication.LoginViewModel
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="col-md-12 alert alert-danger">
+        <span><b>Sorry!</b> - @TempData["Error"]</span>
+    </div>
+}
+
+
+<div class="login-container">
+    <h2 class="text-center mb-4">Login</h2>
+    <form method="post" asp-action="Login" asp-controller="Account">
+        <div class="mb-3">
+            <label for="username" class="form-label">Student ID or Email</label>
+            <input name="username" id="username" class="form-control" placeholder="Enter your student ID or email" required />
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input name="password" id="password" class="form-control" placeholder="Enter your password" type="password" required />
+        </div>
+
+        <br>
+        <button class="btn btn-primary w-100">Login</button>
+    </form>
+
+    <p class="text-danger mt-3">@ViewBag.Message</p>
+
+    <!-- Links for Register and Forgot Password -->
+    <div class="text-center mt-2">
+        <a href="/DefaultView/Register">Don't have an account? Register here</a>
+        <br>
+        <a>or</a>
+        <br>
+        <a href="/DefaultView/ForgotPassword">Forgot your password?</a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/tooltip-init.js"></script>
+
+    <script>
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <text>
+                    alert('@ViewBag.ErrorMessage');
+            </text>
+        }
+    </script>
+}

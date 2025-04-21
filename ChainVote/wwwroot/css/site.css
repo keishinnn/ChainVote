@@ -1,0 +1,152 @@
+/* General Styling */
+html {
+    font-size: 14px;
+    position: relative;
+    min-height: 100%;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+body {
+    margin-bottom: 60px;
+    padding-top: 70px; /* Adjust depending on navbar height */
+}
+
+/* Focus Styles for Form Elements */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Placeholder Styling */
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* Navigation Styling */
+.login-nav {
+    margin-left: auto; /* Aligns the nav to the right */
+    margin-right: 30px; /* Adds space from the right edge */
+    display: flex;
+    gap: 15px; /* Space between Login and Sign Up buttons */
+}
+
+/* Login Page Styles */
+.login-container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 30px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Input Placeholder Focus Effect */
+input:focus::placeholder {
+    color: transparent;
+    transition: color 0.3s;
+}
+
+input::placeholder {
+    transition: color 0.3s;
+}
+
+/* Info Icon Styling */
+.info-icon {
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+/* Register Page Styles */
+.register-container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 30px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+/* Custom Animations */
+.animate-fadein {
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+}
+
+.animate-slideup {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 1s ease forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* -----------------------------
+   USER LAYOUT STYLES (Scoped)
+----------------------------- */
+
+.user-layout {
+    background-color: #f8f9fa;
+    padding-top: 70px;
+    margin-bottom: 60px;
+}
+
+    .user-layout .navbar {
+        backdrop-filter: blur(6px);
+        background-color: rgba(13, 110, 253, 0.85);
+    }
+
+    .user-layout .nav-link.active,
+    .user-layout .nav-link:hover {
+        font-weight: 500;
+        color: #fff !important;
+    }
+
+    .user-layout .dashboard-header {
+        background: linear-gradient(135deg, #0d6efd 60%, #6610f2);
+        color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        animation: fadeIn 0.5s ease-in;
+    }
+
+@keyframes fadeInUser {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

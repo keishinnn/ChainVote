@@ -1,0 +1,44 @@
+﻿@{
+    ViewData["Title"] = "About";
+    Layout = "~/Views/Shared/_UserViewLayout.cshtml";
+}
+
+<section class="py-5">
+    <div class="container text-center animate-fadein">
+        <h1 class="display-5 fw-bold mb-4">About the Project</h1>
+        <p class="lead text-muted mb-4">
+            The <strong>Classroom Blockchain Voting System</strong> is an innovative platform built with ASP.NET Core MVC and SQL Server, designed to make voting in academic institutions secure, transparent, and tamper-proof.
+        </p>
+
+        <div class="row g-4 mt-5">
+            <div class="col-md-4">
+                <div class="card shadow h-100 border-0 animate-slideup">
+                    <div class="card-body">
+                        <h5 class="card-title">🔐 Blockchain Security</h5>
+                        <p class="card-text">Each vote is recorded as a block, encrypted and chained to ensure integrity and immutability.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow h-100 border-0 animate-slideup">
+                    <div class="card-body">
+                        <h5 class="card-title">👥 Role-Based Access</h5>
+                        <p class="card-text">Separate panels for voters and administrators for a clean, controlled, and secure user experience.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow h-100 border-0 animate-slideup">
+                    <div class="card-body">
+                        <h5 class="card-title">📊 Real-Time Insights</h5>
+                        <p class="card-text">Dynamic dashboard and analytics provide real-time insights into elections and voter turnout.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <a href="/DefaultView/Elections" class="btn btn-primary btn-lg px-4">Explore Elections</a>
+        </div>
+    </div>
+</section>

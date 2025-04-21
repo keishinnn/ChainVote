@@ -1,0 +1,38 @@
+﻿@* Views/AdminView/Voters.cshtml *@
+@{
+    ViewData["Title"] = "Voters";
+    Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
+}
+
+<h2 class="mb-4">Voters List</h2>
+<div class="d-flex justify-content-between mb-3">
+    <h5>Manage Voters</h5>
+    <a href="/AdminView/AddVoter" class="btn btn-success">
+        <i class="bi bi-person-plus-fill me-1"></i> Add Voter
+    </a>
+</div>
+
+<table class="table table-bordered table-striped shadow-sm">
+    <thead class="table-primary">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Username</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>John Doe</td>
+            <td>john@example.com</td>
+            <td>johndoe123</td>
+            <td>
+                <a href="/AdminView/EditVoter/1" class="btn btn-sm btn-primary">Edit</a>
+                <a href="/AdminView/DeleteVoter/1" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+        <!-- More voters here -->
+    </tbody>
+</table>
+
+<hr class="my-5" />

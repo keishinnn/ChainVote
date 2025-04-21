@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Elections";
+    Layout = "~/Views/Shared/_UserViewLayout.cshtml";
+}
+
+<h2 class="mb-4">Election Analytics</h2>
+
+<div class="card p-4 shadow-sm">
+    <canvas id="electionChart" height="100"></canvas>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('electionChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Unity', 'Progressive', 'Alliance'],
+                datasets: [{
+                    label: 'Votes',
+                    data: [35, 50, 15],
+                    backgroundColor: ['#0d6efd', '#198754', '#ffc107']
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}
