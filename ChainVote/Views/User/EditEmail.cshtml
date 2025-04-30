@@ -1,0 +1,64 @@
+﻿@model ChainVote.Models.AccountViewModels.EditEmailViewModel
+
+@{
+    ViewData["Title"] = "EditEmail";
+    Layout = "~/Views/Shared/_UserViewLayout.cshtml";
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="col-md-12 alert alert-danger">
+        <span><b>Sorry!</b> - @TempData["Error"]</span>
+    </div>
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="col-md-12 alert alert-success">
+        <span><b>Success!</b> - @TempData["Email changed."]</span>
+    </div>
+}
+
+<div class="container mt-5 mb-5 position-relative">
+
+    <!-- Styled Left Arrow Button for Back Navigation -->
+    <a href="/UserView/Settings"
+       class="btn btn-outline-dark rounded-circle shadow-sm position-absolute top-0 start-0 mt-4 ms-4"
+       title="Back">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow rounded-4">
+                <div class="card-body">
+                    <h3 class="mb-4 text-dark fw-bold">
+                        <i class="bi bi-envelope-fill me-2 text-dark"></i>Update Email
+                    </h3>
+
+                    <form method="post" asp-action="EditEmail" asp-controller="User">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Show ModelState errors here -->
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="NewEmail" class="form-label fw-semibold"></label>
+                            <input asp-for="NewEmail" class="form-control" placeholder="Enter new email" />
+                            <span asp-validation-for="NewEmail" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label fw-semibold"></label>
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Confirm your password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Update Email</button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

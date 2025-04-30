@@ -14,9 +14,9 @@ namespace ChainVote.Data
 
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
         public DbSet<AdminAccount> AdminAccount { get; set; }
-        public DbSet<CandidateData> CandidatesData { get; set; }
-        public DbSet<EventData> EventsData { get; set; }
-        public DbSet<OrganizationData> OrganizationsData { get; set; }
+        public DbSet<CandidatesData> CandidatesData { get; set; }
+        public DbSet<EventsData> EventsData { get; set; }
+        public DbSet<OrganizationsData> OrganizationsData { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

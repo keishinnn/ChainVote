@@ -1,8 +1,11 @@
-/* General Styling */
+/* ================================
+   General Styling
+================================== */
 html {
     font-size: 14px;
     position: relative;
     min-height: 100%;
+    scroll-behavior: smooth;
 }
 
 @media (min-width: 768px) {
@@ -12,51 +15,46 @@ html {
 }
 
 body {
-    margin-bottom: 60px;
-    padding-top: 70px; /* Adjust depending on navbar height */
-}
-
-/* Focus Styles for Form Elements */
-.btn:focus,
-.btn:active:focus,
-.btn-link.nav-link:focus,
-.form-control:focus,
-.form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-/* Placeholder Styling */
-.form-floating > .form-control-plaintext::placeholder,
-.form-floating > .form-control::placeholder {
-    color: var(--bs-secondary-color);
-    text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder,
-.form-floating > .form-control:focus::placeholder {
-    text-align: start;
-}
-
-/* Navigation Styling */
-.login-nav {
-    margin-left: auto; /* Aligns the nav to the right */
-    margin-right: 30px; /* Adds space from the right edge */
+    padding-top: 70px;
+    background-color: #f8f9fa;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
-    gap: 15px; /* Space between Login and Sign Up buttons */
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-/* Login Page Styles */
-.login-container {
-    max-width: 400px;
-    margin: 80px auto;
-    padding: 30px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    background-color: #fff;
+/* ================================
+   Navbar Styling
+================================== */
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* Input Placeholder Focus Effect */
+    .navbar .nav-link {
+        color: #333;
+    }
+
+        .navbar .nav-link:hover,
+        .navbar .nav-link.active {
+            color: #0d6efd;
+            font-weight: 500;
+        }
+
+/* ================================
+   Footer Styling
+================================== */
+footer {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    padding: 20px 0;
+    text-align: center;
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
+}
+
+/* ================================
+   Form & Input Styling
+================================== */
 input:focus::placeholder {
     color: transparent;
     transition: color 0.3s;
@@ -66,26 +64,42 @@ input::placeholder {
     transition: color 0.3s;
 }
 
-/* Info Icon Styling */
-.info-icon {
-    font-size: 1rem;
-    cursor: pointer;
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-clear-button {
+    display: none !important;
 }
 
-/* Register Page Styles */
+/* ================================
+   Login & Register Containers
+================================== */
+.login-container,
 .register-container {
     max-width: 400px;
-    margin: 80px auto;
+    margin: 90px auto;
     padding: 30px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.6s ease-in-out;
 }
 
-/* Custom Animations */
+/* ================================
+   Animations
+================================== */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .animate-fadein {
-    opacity: 0;
     animation: fadeIn 1s ease forwards;
 }
 
@@ -95,12 +109,6 @@ input::placeholder {
     animation: slideUp 1s ease forwards;
 }
 
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
 @keyframes slideUp {
     to {
         opacity: 1;
@@ -108,45 +116,57 @@ input::placeholder {
     }
 }
 
-/* -----------------------------
-   USER LAYOUT STYLES (Scoped)
------------------------------ */
-
-.user-layout {
-    background-color: #f8f9fa;
-    padding-top: 70px;
-    margin-bottom: 60px;
+/* ================================
+   Utility Classes
+================================== */
+.main-content {
+    flex: 1 0 auto;
 }
 
-    .user-layout .navbar {
-        backdrop-filter: blur(6px);
-        background-color: rgba(13, 110, 253, 0.85);
+/* ================================
+   User Layout Enhancements
+================================== */
+body.user-layout {
+    background-color: #eef2f7;
+    padding-top: 70px;
+}
+
+.user-layout .navbar {
+    backdrop-filter: blur(6px);
+    background-color: rgba(13, 110, 253, 0.85);
+}
+
+.user-layout .nav-link.active,
+.user-layout .nav-link:hover {
+    font-weight: 500;
+    color: #fff !important;
+}
+
+.user-layout .dashboard-header {
+    background: linear-gradient(135deg, #0d6efd 60%, #6610f2);
+    color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* ================================
+   Responsive Adjustments
+================================== */
+@media (max-width: 576px) {
+    .login-container,
+    .register-container {
+        margin: 60px auto;
+        padding: 20px;
     }
 
-    .user-layout .nav-link.active,
-    .user-layout .nav-link:hover {
-        font-weight: 500;
-        color: #fff !important;
+    footer {
+        font-size: 14px;
     }
+}
 
-    .user-layout .dashboard-header {
-        background: linear-gradient(135deg, #0d6efd 60%, #6610f2);
-        color: white;
-        border-radius: 12px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        text-align: center;
-        animation: fadeIn 0.5s ease-in;
-    }
-
-@keyframes fadeInUser {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.custom-body {
+    margin-top: 20px; /* Adjust the value as needed */
 }

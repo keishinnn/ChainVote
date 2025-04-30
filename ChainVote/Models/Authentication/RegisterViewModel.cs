@@ -9,6 +9,17 @@ namespace ChainVote.Models.Authentication
         public string StudentId { get; set; }
 
         [Required]
+        [Display(Name = "First Name")]
+        public string FirstName { get; set; } 
+
+        [Required]
+        [Display(Name = "Last Name")]
+        public string LastName { get; set; }  
+
+        [Required]
+        public string Course { get; set; }    
+
+        [Required]
         [EmailAddress]
         public string Email { get; set; }
 

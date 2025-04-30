@@ -1,0 +1,68 @@
+﻿@model ChainVote.Models.DatabaseEntities.AdminAccount
+
+@{
+    ViewData["Title"] = "RegisterAdmin";
+    Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="col-md-12 alert alert-danger">
+        <span><b>Sorry!</b> - @TempData["Error"]</span>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="col-md-12 alert alert-danger">
+        <span> - @TempData["Success"]</span>
+    </div>
+}
+
+<div class="register-container">
+    <h2 class="text-center mb-4">Register</h2>
+
+    <form method="post" asp-action="RegisterAdmin" asp-controller="Account">
+        @Html.AntiForgeryToken()
+
+        <!-- Email Field -->
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <!-- Password Field -->
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Password</label>
+            <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+            <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter your password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+
+        <!-- Role Selection (Optional for now) -->
+        <input type="hidden" asp-for="Role" value="Admin" />
+
+        <!-- Register Button -->
+        <button type="submit" class="btn btn-success w-100">Register</button>
+    </form>
+
+    <!-- Error Message -->
+    <p class="text-danger mt-3">@ViewBag.Message</p>
+
+    <!-- Login Link -->
+    <div class="text-center mt-2">
+        <a href="/Account/Login">Already have an account? Login</a>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/tooltip-init.js"></script>
+}

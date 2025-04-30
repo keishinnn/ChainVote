@@ -5,97 +5,117 @@
     Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
 }
 
-@if (TempData["Error"] != null)
-{
-    <div class="col-md-12 alert alert-danger">
-        <span><b>Sorry!</b> - @TempData["Error"]</span>
-    </div>
-}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow p-4 mt-1" style="max-width: 800px; width: 100%;">
+        <h3 class="text-center mb-4">Register</h3>
 
-@if (TempData["Success"] != null)
-{
-    <div class="col-md-12 alert alert-danger">
-        <span> - @TempData["Success"]</span>
-    </div>
-}
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                <strong>Sorry!</strong> - @TempData["Error"]
+            </div>
+        }
 
-<div class="register-container">
-    <h2 class="text-center mb-4">Register</h2>
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["Success"]
+            </div>
+        }
 
-    <form method="post" asp-action="Register" asp-controller="Account">
-        @Html.AntiForgeryToken()
+        <form method="post" asp-action="Register" asp-controller="Account">
+            @Html.AntiForgeryToken()
 
-        <!-- Student ID Field -->
-        <div class="mb-3">
-            <label asp-for="StudentId" class="form-label d-flex align-items-center justify-content-between">
-                <span>Student ID</span>
-                <i class="bi bi-info-circle text-muted info-icon"
-                   data-bs-toggle="tooltip"
-                   data-bs-placement="right"
-                   title="Only registered Student ID can register"></i>
-            </label>
-            <input asp-for="StudentId" class="form-control" placeholder="Enter your student ID" />
-            <span asp-validation-for="StudentId" class="text-danger"></span>
-        </div>
+            <!-- Line 1 -->
+            <div class="row mb-3">
+                <div class="col-md-4 form-floating mb-3 mb-md-0">
+                    <input asp-for="StudentId" class="form-control" placeholder="Student ID" />
+                    <label asp-for="StudentId">Student ID</label>
+                    <span asp-validation-for="StudentId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 form-floating mb-3 mb-md-0">
+                    <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                    <label asp-for="LastName">Last Name</label>
+                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 form-floating">
+                    <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                    <label asp-for="FirstName">First Name</label>
+                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                </div>
+            </div>
 
-        <!-- Email Field -->
-        <div class="mb-3">
-            <label asp-for="Email" class="form-label">Email</label>
-            <input asp-for="Email" class="form-control" placeholder="Enter your email" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
+            <!-- Line 2 -->
+            <div class="row mb-3">
+                <div class="col-md-4 form-floating mb-3 mb-md-0">
+                    <select asp-for="Course" class="form-select" aria-label="Course">
+                        <option value="">Select course</option>
+                        <option value="BSCS">BSCS</option>
+                        <option value="BSIT">BSIT</option>
+                        <option value="BSIS">BSIS</option>
+                        <option value="BSCE">BSCE</option>
+                        <option value="BSCpE">BSCpE</option>
+                    </select>
+                    <label asp-for="Course">Course</label>
+                    <span asp-validation-for="Course" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 form-floating mb-3 mb-md-0">
+                    <select asp-for="YearLevel" class="form-select" aria-label="Year Level">
+                        <option value="">Select year</option>
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+                    <label asp-for="YearLevel">Year Level</label>
+                    <span asp-validation-for="YearLevel" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 form-floating">
+                    <select asp-for="Section" class="form-select">
+                        <option value="" disabled selected>Select Section</option>
+                        @for (char sec = 'A'; sec <= 'P'; sec++)
+                        {
+                            <option value="@sec">@sec</option>
+                        }
+                    </select>
+                    <label asp-for="Section">Section</label>
+                    <span asp-validation-for="Section" class="text-danger small"></span>
+                </div>
+            </div>
 
-        <!-- Password Field -->
-        <div class="mb-3">
-            <label asp-for="Password" class="form-label">Password</label>
-            <input asp-for="Password" class="form-control" placeholder="Enter your password" />
-            <span asp-validation-for="Password" class="text-danger"></span>
-        </div>
+            <!-- Line 3 -->
+            <div class="form-floating mb-3">
+                <input asp-for="Email" class="form-control" placeholder="Email" />
+                <label asp-for="Email">Email</label>
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
 
-        <!-- Confirm Password Field -->
-        <div class="mb-3">
-            <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
-            <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter your password" />
-            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-        </div>
+            <!-- Line 4 -->
+            <div class="row mb-3">
+                <div class="col-md-6 form-floating mb-3 mb-md-0">
+                    <input asp-for="Password" class="form-control" placeholder="Password" type="password" />
+                    <label asp-for="Password">Password</label>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 form-floating">
+                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm Password" type="password" />
+                    <label asp-for="ConfirmPassword">Confirm Password</label>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+            </div>
 
-        <!-- Role Selection (Optional for now) -->
-        <input type="hidden" asp-for="Role" value="Voter" />
+            <!-- Hidden Role -->
+            <input type="hidden" asp-for="Role" value="Voter" />
 
-        <!-- Year Level Field -->
-        <div class="mb-3">
-            <label asp-for="YearLevel" class="form-label">Year Level</label>
-            <select asp-for="YearLevel" class="form-select">
-                <option value="">Select your year level</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-            </select>
-            <span asp-validation-for="YearLevel" class="text-danger"></span>
-        </div>
+            <button type="submit" class="btn btn-primary w-100 mt-2">Register</button>
 
-        <!-- Section Field -->
-        <div class="mb-3">
-            <label asp-for="Section" class="form-label">Section</label>
-            <input asp-for="Section" class="form-control" placeholder="Enter your section" />
-            <span asp-validation-for="Section" class="text-danger"></span>
-        </div>
-
-        <!-- Register Button -->
-        <button type="submit" class="btn btn-success w-100">Register</button>
-    </form>
-
-    <!-- Error Message -->
-    <p class="text-danger mt-3">@ViewBag.Message</p>
-
-    <!-- Login Link -->
-    <div class="text-center mt-2">
-        <a href="/Account/Login">Already have an account? Login</a>
+            <div class="text-center mt-3">
+                <a href="/Account/Login">Already have an account? Login</a>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/js/tooltip-init.js"></script>
 }

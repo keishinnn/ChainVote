@@ -5,25 +5,43 @@
 
 <h2 class="mb-4">Registered Accounts</h2>
 
-<table class="table table-bordered table-hover shadow-sm">
+<input type="hidden" id="getAccountsUrl" value="@Url.Action("GetAccounts", "AdminView")" />
+
+<table id="accountsTable" class="table table-bordered table-hover shadow-sm">
     <thead class="table-light">
         <tr>
-            <th>ID</th>
+            <th>Student ID</th>
             <th>Full Name</th>
+            <th>Course</th>
+            <th>Year Level</th>
+            <th>Section</th>
             <th>Email</th>
-            <th>Role</th>
-            <th>Registered On</th>
         </tr>
     </thead>
     <tbody>
-        <!-- Sample row -->
-        <tr>
-            <td>1</td>
-            <td>Juan Dela Cruz</td>
-            <td>juancruz@gmail.com</td>
-            <td>Voter</td>
-            <td>2025-04-15</td>
-        </tr>
-        <!-- Add rows dynamically -->
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#accountsTable').DataTable({
+                "processing": true,
+                "serverSide": false,
+                "ajax": {
+                    "url": '@Url.Action("GetAccounts", "AdminView")',  // Razor now works!
+                    "type": 'GET',
+                    "dataSrc": "data"
+                },
+                "columns": [
+                    { "data": "studentId" },
+                    { "data": "fullName" },  // Use fullName instead of email here
+                    { "data": "course" },
+                    { "data": "yearLevel" },
+                    { "data": "section" },
+                    { "data": "email" },
+                ]
+            });
+        });
+    </script>
+}

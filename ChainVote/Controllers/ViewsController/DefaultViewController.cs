@@ -43,6 +43,11 @@ namespace ChainVote.Controllers.ViewsController
             return View();
         }
 
+        public IActionResult RegisterAdmin()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

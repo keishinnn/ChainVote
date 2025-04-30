@@ -39,7 +39,12 @@ namespace ChainVote.Controllers
             return View();
         }
 
-        public IActionResult EditProfile()
+        public IActionResult EditEmail()
+        {
+            return View();
+        }
+
+        public IActionResult EditPassword()
         {
             return View();
         }
@@ -53,6 +58,19 @@ namespace ChainVote.Controllers
         {
             return View();
         }
+
+        //[HttpPost]
+        //public async Task<IActionResult> EditEmail(EditEmailViewModel model)
+        //{
+
+        //}
+
+        //[HttpPost]
+        //public async Task<IActionResult> EditPassword(EditPasswordViewModel model)
+        //{
+
+        //}
+
 
     }
 }

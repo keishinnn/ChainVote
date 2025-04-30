@@ -23,7 +23,12 @@
 
         <div class="mb-3">
             <label for="password" class="form-label">Password</label>
-            <input name="password" id="password" class="form-control" placeholder="Enter your password" type="password" required />
+            <div class="input-group">
+                <input name="password" id="loginPassword" class="form-control" placeholder="Enter your password" type="password" required />
+                <button type="button" class="btn btn-outline-secondary" id="toggleLoginPassword">
+                    <i class="bi bi-eye-slash"></i>
+                </button>
+            </div>
         </div>
 
         <br>
@@ -34,7 +39,7 @@
 
     <!-- Links for Register and Forgot Password -->
     <div class="text-center mt-2">
-        <a href="/DefaultView/Register">Don't have an account? Register here</a>
+        <a href="/Account/Register">Don't have an account? Register here</a>
         <br>
         <a>or</a>
         <br>
@@ -43,14 +48,25 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/tooltip-init.js"></script>
-
     <script>
-        @if (ViewBag.ErrorMessage != null)
-        {
-            <text>
-                    alert('@ViewBag.ErrorMessage');
-            </text>
+        function togglePasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+
+            toggleButton.innerHTML = type === 'password'
+                ? '<i class="bi bi-eye-slash"></i>'
+                : '<i class="bi bi-eye"></i>';
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('toggleLoginPassword');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function () {
+                    togglePasswordVisibility('loginPassword', 'toggleLoginPassword');
+                });
+            }
+        });
     </script>
 }

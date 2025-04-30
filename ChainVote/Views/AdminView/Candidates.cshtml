@@ -1,78 +1,211 @@
-﻿@* Views/AdminView/Candidates.cshtml *@
-@{
+﻿@{
     ViewData["Title"] = "Candidates";
     Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
 }
 
 <h2 class="mb-4">Manage Candidates</h2>
 
-<div class="mb-4">
-    <h5>Voters Eligible to Become Candidates</h5>
-    <table class="table table-bordered table-hover">
-        <thead class="table-light">
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Jane Smith</td>
-                <td>jane@example.com</td>
-                <td>
-                    <a href="/AdminView/MakeCandidate/1" class="btn btn-sm btn-warning">Make Candidate</a>
-                </td>
-            </tr>
-            <!-- More rows -->
-        </tbody>
-    </table>
+<!-- 1. Eligible Voters -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Voters Eligible to Become Candidates</h5>
+    </div>
+    <div class="card-body p-3">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>202301234</td>
+                    <td>Smith</td>
+                    <td>Jane</td>
+                    <td>jane@example.com</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning"
+                                type="button"
+                                data-bs-toggle="modal"
+                                data-bs-target="#makeCandidateModal"
+                                onclick="setCandidateForm('@null')">
+                            Make Candidate
+                        </button>
+                    </td>
+                </tr>
+                <!-- More rows dynamically rendered -->
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<div class="mb-4">
-    <h5>Candidates Ready for Deployment</h5>
-    <table class="table table-bordered table-hover">
-        <thead class="table-light">
-            <tr>
-                <th>Name</th>
-                <th>Election</th>
-                <th>Position</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Carlos Reyes</td>
-                <td>SSC 2025</td>
-                <td>President</td>
-                <td>
-                    <a href="/AdminView/DeployCandidate/1" class="btn btn-sm btn-success">Deploy</a>
-                </td>
-            </tr>
-            <!-- More rows -->
-        </tbody>
-    </table>
+<!-- 2. Candidates Ready for Deployment -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0">Candidates Ready for Deployment</h5>
+    </div>
+    <div class="card-body p-3">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Election Name</th>
+                    <th>Position</th>
+                    <th>Party List</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>202301235</td>
+                    <td>Reyes</td>
+                    <td>Carlos</td>
+                    <td>SSC 2025</td>
+                    <td>President</td>
+                    <td>Unity Front</td>
+                    <td>
+                        <a href="/AdminView/RemoveCandidate/1" class="btn btn-sm btn-danger">Remove</a>
+                    </td>
+                </tr>
+                <!-- More rows -->
+            </tbody>
+        </table>
+        <div class="text-end">
+            <button class="btn btn-success mt-2">Deploy All</button>
+        </div>
+    </div>
 </div>
 
-<div>
-    <h5>Deployed Candidates</h5>
-    <table class="table table-bordered table-hover">
-        <thead class="table-light">
-            <tr>
-                <th>Name</th>
-                <th>Party List</th>
-                <th>Position</th>
-                <th>Election</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Ana Cruz</td>
-                <td>Blue Phoenix</td>
-                <td>Vice President</td>
-                <td>SSC 2025</td>
-            </tr>
-            <!-- More rows -->
-        </tbody>
-    </table>
+<!-- 3. Deployed Candidates -->
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0">Deployed Candidates</h5>
+    </div>
+    <div class="card-body p-3">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
+                    <th>Election Name</th>
+                    <th>Position</th>
+                    <th>Party List</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>202301236</td>
+                    <td>Cruz</td>
+                    <td>Ana</td>
+                    <td>SSC 2025</td>
+                    <td>Vice President</td>
+                    <td>Blue Phoenix</td>
+                </tr>
+                <!-- More rows -->
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<!-- Candidate Form Modal -->
+<div class="modal fade" id="makeCandidateModal" tabindex="-1" aria-labelledby="makeCandidateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" asp-action="SubmitCandidate">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="makeCandidateModalLabel">Fill Up Candidate Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="CandidateStudentId" name="StudentId" />
+
+                    <div class="mb-3">
+                        <label for="electionSelect" class="form-label">Election Name</label>
+                        <select id="electionSelect" name="ElectionName" class="form-select" onchange="updatePositionsDropdown()">
+                            <option disabled selected>Select Election</option>
+                            @foreach (var election in ViewBag.Elections)
+                            {
+                                <option value="@election">@election</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="positionSelect" class="form-label">Position</label>
+                        <select id="positionSelect" name="Position" class="form-select">
+                            <option disabled selected>Select Position</option>
+                        </select>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label for="PartyList" class="form-label">Party List</label>
+                        <select id="PartyList" name="PartyList" class="form-select" required>
+                            <option value="" disabled selected>Select party list</option>
+                            @foreach (var party in ViewBag.PartyLists as List<string>)
+                            {
+                                <option value="@party">@party</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit Candidate</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const electionPositions = {
+            "Campus Student Government (CSG) / University Student Government (USG)": [
+                "President",
+                "Vice President for Internal Affairs",
+                "Vice President for External Affairs",
+                "Secretary",
+                "Treasurer",
+                "Auditor",
+                "Public Information Officer (PIO)",
+                "Business Manager",
+                "Senator"
+            ],
+            "Class Officer": [
+                "Class Mayor",
+                "Vice Mayor",
+                "Secretary",
+                "Treasurer",
+                "Auditor",
+                "Public Information Officer",
+                "Representative"
+            ]
+        };
+
+        function updatePositionsDropdown() {
+            const electionSelect = document.getElementById("electionSelect");
+            const positionSelect = document.getElementById("positionSelect");
+            const selectedElection = electionSelect.value;
+
+            // Clear previous options
+            positionSelect.innerHTML = '<option disabled selected>Select Position</option>';
+
+            if (electionPositions[selectedElection]) {
+                electionPositions[selectedElection].forEach(pos => {
+                    const option = document.createElement("option");
+                    option.value = pos;
+                    option.text = pos;
+                    positionSelect.appendChild(option);
+                });
+            }
+        }
+    </script>
+}
+
