@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ChainVote.Models.DatabaseEntities;
+using ChainVote.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using ChainVote.Data;
+using ChainVote.Models.DatabaseEntities;
 
 namespace ChainVote.Controllers.ViewsController
 {
@@ -10,10 +11,12 @@ namespace ChainVote.Controllers.ViewsController
     public class AdminViewController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AdminViewController> _logger;
 
-        public AdminViewController(ApplicationDbContext context)
+        public AdminViewController(ApplicationDbContext context, ILogger<AdminViewController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // 1. Dashboard
@@ -22,11 +25,45 @@ namespace ChainVote.Controllers.ViewsController
             return View();
         }
 
-        // 2. Elections
-        public IActionResult Elections()
+        //public async Task<IActionResult> StartElection()
+        //{
+                // this link to the start election button
+                // and it needs at least two party list to start
+                //
+        //}
+
+        public async Task<IActionResult> Elections()
         {
-            return View();
+            var allEvents = await _context.EventsData.ToListAsync();
+            var allVoters = await _context.Voters.ToListAsync();
+
+            var grouped = allEvents.Select(evt =>
+            {
+                var voters = allVoters.Where(v => v.EventId == evt.Id).ToList();
+                return new ElectionSummary
+                {
+                    Event = evt,
+                    TotalVoters = voters.Count,
+                    TotalVoted = voters.Count(v => v.HasVoted)
+                };
+            }).ToList(); // Ensure we execute this once
+
+            var model = new ElectionOverviewViewModel
+            {
+                AwaitingElections = grouped.Where(e => e.Event.Status == "Awaiting").ToList() ?? new List<ElectionSummary>(),
+                InProgressElections = grouped.Where(e => e.Event.Status == "InProgress").ToList() ?? new List<ElectionSummary>(),
+                CompletedElections = grouped.Where(e => e.Event.Status == "Completed").ToList() ?? new List<ElectionSummary>(),
+                NewEvent = new EventsData // Also initialize NewEvent
+                {
+                    StartDate = DateTime.Today,
+                    EndDate = DateTime.Today.AddDays(1)
+                }
+            };
+
+            return View(model);
         }
+
+
 
         public IActionResult Candidates()
         {
@@ -79,10 +116,86 @@ namespace ChainVote.Controllers.ViewsController
         }
 
 
-        public IActionResult AddElection()
+        [HttpPost]
+        public async Task<IActionResult> AddElection(ElectionOverviewViewModel model)
         {
-            return View();
+            // add a logic where it will pick a specific type of election and whenever
+            // the user picks what type of it , it will determine the positions of the election event
+            _logger.LogInformation("AddElection called at {Time}", DateTime.Now);
+
+            // Set default values BEFORE model validation
+            if (model.NewEvent != null)
+            {
+                model.NewEvent.Status ??= "Awaiting";
+                model.NewEvent.Email ??= User.Identity?.Name ?? "admin@example.com";
+                model.NewEvent.Organizations ??= "DefaultOrganization"; // or some ID/foreign key, adjust as needed
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    if (model.NewEvent.StartDate >= model.NewEvent.EndDate)
+                    {
+                        TempData["ErrorMessage"] = "Start Date must be before End Date.";
+                        return RedirectToAction("Elections");
+                    }
+
+                    _context.EventsData.Add(model.NewEvent);
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = "Election created successfully!";
+                    return RedirectToAction("Elections");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Exception in AddElection");
+                    TempData["ErrorMessage"] = "An error occurred while creating the election: " + ex.Message;
+                    return RedirectToAction("Elections");
+                }
+            }
+
+            _logger.LogWarning("ModelState is invalid");
+            foreach (var entry in ModelState)
+            {
+                foreach (var error in entry.Value.Errors)
+                {
+                    _logger.LogWarning("Validation error for {Key}: {Error}", entry.Key, error.ErrorMessage);
+                }
+            }
+
+            var allEvents = await _context.EventsData.ToListAsync();
+            var allVoters = await _context.Voters.ToListAsync();
+
+            var grouped = allEvents.Select(evt =>
+            {
+                var voters = allVoters.Where(v => v.EventId == evt.Id).ToList();
+                return new ElectionSummary
+                {
+                    Event = evt,
+                    TotalVoters = voters.Count,
+                    TotalVoted = voters.Count(v => v.HasVoted)
+                };
+            }).ToList();
+
+            model.AwaitingElections = grouped.Where(e => e.Event.Status == "Awaiting").ToList();
+            model.InProgressElections = grouped.Where(e => e.Event.Status == "InProgress").ToList();
+            model.CompletedElections = grouped.Where(e => e.Event.Status == "Completed").ToList();
+
+            model.NewEvent ??= new EventsData
+            {
+                StartDate = DateTime.Today,
+                EndDate = DateTime.Today.AddDays(1),
+                Status = "Awaiting",
+                Organizations = "DefaultOrganization"
+            };
+
+            TempData["ErrorMessage"] = "Failed to create election. Please check the form and try again.";
+            return View("Elections", model);
         }
+
+
+
 
         public IActionResult EditElection(int id)
         {
@@ -137,7 +250,7 @@ namespace ChainVote.Controllers.ViewsController
         }
 
         // 5. Contents
-        public IActionResult Contents()
+        public IActionResult Organizations()
         {
             return View();
         }
@@ -212,7 +325,6 @@ namespace ChainVote.Controllers.ViewsController
         {
             return $"{year}{section}";
         }
-
 
     }
 }

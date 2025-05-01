@@ -52,7 +52,7 @@ namespace ChainVote.Controllers
 
                         if (roles.Contains("Admin"))
                         {
-                            return RedirectToAction("Contents", "AdminView"); // Redirect admin
+                            return RedirectToAction("Dashboard", "AdminView"); // Redirect admin
                         }
                         else if (roles.Contains("Voter"))
                         {

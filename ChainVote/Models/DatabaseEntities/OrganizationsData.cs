@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChainVote.Models.DatabaseEntities
 {
@@ -14,6 +15,13 @@ namespace ChainVote.Models.DatabaseEntities
         [Required(ErrorMessage = "Organization email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
         [MaxLength(100)]
-        public string Email { get; set; } // For organization contact or admin
+        public string Email { get; set; }
+
+        // Foreign key to EventsData
+        [Required]
+        public int EventId { get; set; }
+
+        [ForeignKey("EventId")]
+        public EventsData Event { get; set; }
     }
 }

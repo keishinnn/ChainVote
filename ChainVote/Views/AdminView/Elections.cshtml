@@ -1,15 +1,32 @@
-﻿@{
+﻿@using ChainVote.Models.ViewModels
+@model ElectionOverviewViewModel
+
+@{
     ViewData["Title"] = "Elections";
     Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <h2 class="mb-4">Manage Elections</h2>
 
+<!-- Section 1: Election Status Cards -->
 <div class="d-flex justify-content-between mb-3">
     <h5>Election Events</h5>
-    <a href="/AdminView/AddElection" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i> Add New Election
-    </a>
 </div>
 
 <ul class="nav nav-tabs" id="electionTabs" role="tablist">
@@ -23,24 +40,106 @@
         <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed</button>
     </li>
 </ul>
+<!-- Awaiting Elections -->
+<div class="tab-pane fade show active" id="awaiting" role="tabpanel">
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        @foreach (var election in Model.AwaitingElections)
+        {
+            <div class="col">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@election.Event.EventName</h5>
+                        <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
+                        <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
+                        <p class="card-text"><small class="text-muted">Awaiting status</small></p>
 
-<div class="tab-content pt-3">
-    <div class="tab-pane fade show active" id="awaiting" role="tabpanel">
-        <p>No awaiting elections.</p>
-    </div>
-    <div class="tab-pane fade" id="inprogress" role="tabpanel">
-        <div class="card">
-            <div class="card-body">
-                <h5>BPSU SSC Elections 2025</h5>
-                <p>Start Date: April 15</p>
-                <div>
-                    <a href="/AdminView/EditElection/1" class="btn btn-sm btn-outline-primary">Edit</a>
-                    <a href="/AdminView/StopElection/1" class="btn btn-sm btn-outline-danger">Stop</a>
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="/AdminView/StartElection/@election.Event.Id" class="btn btn-success btn-sm">Start</a>
+                            <a href="/AdminView/EditPositions/@election.Event.Id" class="btn btn-outline-primary btn-sm">Edit Positions</a>
+                            <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="tab-pane fade" id="completed" role="tabpanel">
-        <p>No completed elections yet.</p>
+        }
     </div>
 </div>
+
+<!-- In Progress Elections -->
+<div class="tab-pane fade" id="inprogress" role="tabpanel">
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        @foreach (var election in Model.InProgressElections)
+        {
+            <div class="col">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@election.Event.EventName</h5>
+                        <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
+                        <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
+                        <p class="card-text"><small class="text-muted">In progress</small></p>
+
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="/AdminView/StopElection/@election.Event.Id" class="btn btn-danger btn-sm">Stop</a>
+                            <a href="/AdminView/EditPositions/@election.Event.Id" class="btn btn-outline-primary btn-sm">Edit Positions</a>
+                            <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+@{
+    var today = DateTime.Now.ToString("yyyy-MM-dd");
+    var todayTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");  // Including time for datetime-local input
+}
+
+<div id="createElectionForm" class="card mt-5 shadow-sm">
+    <div class="card-header">
+        <h5 class="mb-0">Create New Election</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="AddElection" method="post">
+            <div class="mb-3">
+                <label asp-for="NewEvent.EventName" class="form-label">Election Title</label>
+                <input asp-for="NewEvent.EventName" class="form-control" placeholder="Enter title..." />
+                <span asp-validation-for="NewEvent.EventName" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="NewEvent.StartDate" class="form-label">Start Date</label>
+                <input asp-for="NewEvent.StartDate" type="datetime-local" class="form-control" />
+                <span asp-validation-for="NewEvent.StartDate" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="NewEvent.EndDate" class="form-label">End Date</label>
+                <input asp-for="NewEvent.EndDate" type="datetime-local" class="form-control" />
+                <span asp-validation-for="NewEvent.EndDate" class="text-danger small"></span>
+            </div>
+
+            <!-- Hidden inputs to satisfy required validation -->
+            <input type="hidden" asp-for="NewEvent.Email" value="@User.Identity?.Name ?? " admin@example.com"" />
+            <input type="hidden" asp-for="NewEvent.Status" value="Awaiting" />
+            <input type="hidden" asp-for="NewEvent.Organizations" value="DefaultOrganization" />
+
+@*             <div class="form-group mb-3">
+                <label for="NewEvent_ElectionType">Election Type</label>
+                <select asp-for="NewEvent.ElectionType" asp-items="NewEvent.ElectionTypes" class="form-control">
+                    <option value="">-- Select Election Type --</option>
+                </select>
+            </div> *@
+
+            <button type="submit" class="btn btn-primary">Create Election</button>
+        </form>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}
