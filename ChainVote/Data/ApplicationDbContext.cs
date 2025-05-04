@@ -21,7 +21,6 @@ namespace ChainVote.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Votes>()
                 .HasIndex(v => v.CandidateId)
@@ -34,6 +33,12 @@ namespace ChainVote.Data
             modelBuilder.Entity<PositionsData>()
                 .HasIndex(p => p.EventId)
                 .HasDatabaseName("IX_Positions_EventId");
+
+            modelBuilder.Entity<EventsData>()
+                .Property(e => e.Status)
+                .HasConversion<string>();
+
+            base.OnModelCreating(modelBuilder);
         }
 
     }

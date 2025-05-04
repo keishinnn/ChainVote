@@ -38,19 +38,29 @@ namespace ChainVote.Controllers
 
             var model = new ElectionOverviewViewModel
             {
-                AwaitingElections = grouped.Where(e => e.Event.Status == "Awaiting").ToList(),
-                InProgressElections = grouped.Where(e => e.Event.Status == "InProgress").ToList(),
-                CompletedElections = grouped.Where(e => e.Event.Status == "Completed").ToList(),
+                AwaitingElections = grouped
+                    .Where(e => e.Event.Status == ElectionStatus.Awaiting)
+                    .ToList(),
+
+                InProgressElections = grouped
+                    .Where(e => e.Event.Status == ElectionStatus.InProgress)
+                    .ToList(),
+
+                CompletedElections = grouped
+                    .Where(e => e.Event.Status == ElectionStatus.Completed)
+                    .ToList(),
+
                 NewEvent = new EventsData
                 {
                     StartDate = DateTime.Today,
                     EndDate = DateTime.Today.AddDays(1)
                 },
+
                 ElectionTypes = Enum.GetValues(typeof(ElectionType))
                     .Cast<ElectionType>()
                     .Select(e => new SelectListItem
                     {
-                        Value = e.ToString(), // Value = "ClassOfficer" or "CampusGovernment"
+                        Value = e.ToString(),
                         Text = e == ElectionType.CampusGovernment ? "CSG/USG" : "Class Officer"
                     })
                     .ToList()
@@ -58,6 +68,7 @@ namespace ChainVote.Controllers
 
             return View("~/Views/AdminView/Elections.cshtml", model);
         }
+
 
 
         [HttpPost]
@@ -69,11 +80,10 @@ namespace ChainVote.Controllers
 
             if (model.NewEvent != null)
             {
-                model.NewEvent.Status ??= "Awaiting";
+                model.NewEvent.Status = ElectionStatus.Awaiting;
                 model.NewEvent.Email ??= User.Identity?.Name ?? "admin@example.com";
                 model.NewEvent.Organizations ??= "DefaultOrganization";
 
-                // Save selected courses/year levels/sections as comma-separated strings
                 model.NewEvent.AllowedCourses = Courses != null ? string.Join(",", Courses) : "";
                 model.NewEvent.AllowedYearLevels = YearLevels != null ? string.Join(",", YearLevels) : "";
                 model.NewEvent.AllowedSections = Sections != null ? string.Join(",", Sections) : "";
@@ -131,6 +141,7 @@ namespace ChainVote.Controllers
                 return RedirectToAction("Elections");
             }
         }
+
 
 
         public IActionResult EditElection(int id)

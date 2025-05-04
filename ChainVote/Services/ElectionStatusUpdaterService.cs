@@ -5,7 +5,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using ChainVote.Data; // adjust this namespace
-using ChainVote.Models; // adjust if needed
+using ChainVote.Models;
+using ChainVote.Models.DatabaseEntities; // adjust if needed
 
 public class ElectionStatusUpdaterService : IHostedService, IDisposable
 {
@@ -35,18 +36,18 @@ public class ElectionStatusUpdaterService : IHostedService, IDisposable
             {
                 if (now >= election.StartDate && now < election.EndDate)
                 {
-                    if (election.Status != "In Progress")
-                        election.Status = "In Progress";
+                    if (election.Status != ElectionStatus.InProgress)
+                        election.Status = ElectionStatus.InProgress;
                 }
                 else if (now >= election.EndDate)
                 {
-                    if (election.Status != "Completed")
-                        election.Status = "Completed";
+                    if (election.Status != ElectionStatus.Completed)
+                        election.Status = ElectionStatus.Completed;
                 }
                 else
                 {
-                    if (election.Status != "Awaiting")
-                        election.Status = "Awaiting";
+                    if (election.Status != ElectionStatus.Awaiting)
+                        election.Status = ElectionStatus.Awaiting;
                 }
             }
 

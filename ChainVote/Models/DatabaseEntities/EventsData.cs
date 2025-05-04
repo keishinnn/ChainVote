@@ -7,6 +7,12 @@ namespace ChainVote.Models.DatabaseEntities
         ClassOfficer,
         CampusGovernment
     }
+    public enum ElectionStatus
+    {
+        Awaiting,
+        InProgress,
+        Completed
+    }
 
     public class EventsData
     {
@@ -33,9 +39,7 @@ namespace ChainVote.Models.DatabaseEntities
         [MaxLength(500)]
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "Status is required.")]
-        [MaxLength(20)]
-        public string Status { get; set; } = "Awaiting";
+        public ElectionStatus Status { get; set; }
 
         [Required(ErrorMessage = "The Organizations field is required.")]
         [MaxLength(100)]

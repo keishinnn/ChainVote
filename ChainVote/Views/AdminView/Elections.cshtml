@@ -39,81 +39,84 @@
         <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed</button>
     </li>
 </ul>
-<!-- Awaiting Elections -->
-<div class="tab-pane fade show active" id="awaiting" role="tabpanel">
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        @foreach (var election in Model.AwaitingElections)
-        {
-            <div class="col">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">@election.Event.EventName</h5>
-                        <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
-                        <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
-                        <p class="card-text"><small class="text-muted">Awaiting status</small></p>
 
-                        <div class="d-flex gap-2 mt-3">
-                            <a href="/AdminView/StartElection/@election.Event.Id" class="btn btn-success btn-sm">Start</a>
-                            <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
-                            <button type="button" class="btn btn-outline-primary btn-sm"
-                                    onclick="openEditAllowedVotersModal(@election.Event.Id)">
-                                Edit Allowed Voters
-                            </button>
+<!-- ✅ Start of tab-content wrapper -->
+<div class="tab-content mt-3">
+    <!-- Awaiting Elections -->
+    <div class="tab-pane fade show active" id="awaiting" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var election in Model.AwaitingElections)
+            {
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@election.Event.EventName</h5>
+                            <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
+                            <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
+                            <p class="card-text"><small class="text-muted">Awaiting status</small></p>
 
-                            <button type="button" class="btn btn-outline-danger btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteConfirmationModal"
-                                    data-election-id="@election.Event.Id"
-                                    data-election-name="@election.Event.EventName">
-                                Delete
-                            </button>
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="/AdminView/StartElection/@election.Event.Id" class="btn btn-success btn-sm">Start</a>
+                                <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                        onclick="openEditAllowedVotersModal(@election.Event.Id)">
+                                    Edit Allowed Voters
+                                </button>
+
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmationModal"
+                                        data-election-id="@election.Event.Id"
+                                        data-election-name="@election.Event.EventName">
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
     </div>
-</div>
 
-<!-- In Progress Elections -->
-<div class="tab-pane fade" id="inprogress" role="tabpanel">
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        @foreach (var election in Model.InProgressElections)
-        {
-            <div class="col">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">@election.Event.EventName</h5>
-                        <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
-                        <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
-                        <p class="card-text"><small class="text-muted">In progress</small></p>
+    <!-- In Progress Elections -->
+    <div class="tab-pane fade" id="inprogress" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var election in Model.InProgressElections)
+            {
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@election.Event.EventName</h5>
+                            <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
+                            <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
+                            <p class="card-text"><small class="text-muted">In progress</small></p>
 
-                        <div class="d-flex gap-2 mt-3">
-                            <a href="/AdminView/StopElection/@election.Event.Id" class="btn btn-danger btn-sm">Stop</a>
-                            <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
-                            <button type="button" class="btn btn-outline-primary btn-sm"
-                                    onclick="openEditAllowedVotersModal(@election.Event.Id)">
-                                Edit Allowed Voters
-                            </button>
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="/AdminView/StopElection/@election.Event.Id" class="btn btn-danger btn-sm">Stop</a>
+                                <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                        onclick="openEditAllowedVotersModal(@election.Event.Id)">
+                                    Edit Allowed Voters
+                                </button>
 
-                            <button type="button" class="btn btn-outline-danger btn-sm"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteConfirmationModal"
-                                    data-election-id="@election.Event.Id"
-                                    data-election-name="@election.Event.EventName">
-                                Delete
-                            </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmationModal"
+                                        data-election-id="@election.Event.Id"
+                                        data-election-name="@election.Event.EventName">
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        }
+            }
+        </div>
     </div>
+
+    <!-- You can add the Completed tab content here as well if needed -->
 </div>
-
-
-
-
+<!-- ✅ End of tab-content wrapper -->
 @{
     var today = DateTime.Now.ToString("yyyy-MM-dd");
     var todayTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm");  // Including time for datetime-local input
