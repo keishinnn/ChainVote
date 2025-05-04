@@ -276,7 +276,7 @@
             </div>
 
             <div class="modal-body">
-                <form id="editAllowedVotersForm" method="post" asp-controller="EventsData" asp-action="UpdateAllowedVoters">
+                <form id="editAllowedVotersForm" method="post" asp-controller="EventsData" asp-action="EditAllowedVoters">
                     @Html.AntiForgeryToken()
                     <input type="hidden" id="editElectionId" name="ElectionId" />
 
@@ -344,7 +344,7 @@
                     </div>
 
                     <div class="mt-4 text-end">
-                        <button type="submit" class="btn btn-success px-4">Save Changes</button>
+                        <button type="button" class="btn btn-success px-4" id="openConfirmAllowedVotersModalBtn">Save Changes</button>
                         <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
@@ -366,7 +366,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to update the allowed year levels and sections?
+                Are you sure you want to update the allowed course, year levels and sections?
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Review</button>
@@ -431,11 +431,16 @@
                 data: { electionId: electionId },
                 success: function (data) {
                     console.log("Fetched data:", data);
-                    const { yearLevels, sections, courses, selectedYearLevels, selectedSections, selectedCourses } = data;
 
-                    populateDropdown('editYearDropdown', 'editYearOption', 'AllowedYearLevels', yearLevels, selectedYearLevels);
-                    populateDropdown('editSectionDropdown', 'editSectionOption', 'AllowedSections', sections, selectedSections);
-                    populateDropdown('editCourseDropdown', 'editCourseOption', 'AllowedCourses', courses, selectedCourses);
+                    const {
+                        predefinedCourses, predefinedYearLevels, predefinedSections,
+                        selectedCourses, selectedYearLevels, selectedSections
+                    } = data;
+
+                    // ✅ Pass correct field names to match controller parameters
+                    populateDropdown('editCourseDropdown', 'editCourseOption', 'Courses', predefinedCourses, selectedCourses);
+                    populateDropdown('editYearDropdown', 'editYearOption', 'YearLevels', predefinedYearLevels, selectedYearLevels);
+                    populateDropdown('editSectionDropdown', 'editSectionOption', 'Sections', predefinedSections, selectedSections);
                 },
                 error: function (err) {
                     console.error("Error fetching allowed voters data:", err);
@@ -445,7 +450,7 @@
 
         function populateDropdown(containerId, optionClass, name, items, selectedItems) {
             const container = $('#' + containerId);
-            container.find('li.' + optionClass).remove(); // Clear old dynamic options
+            container.find('li.' + optionClass).remove();
 
             if (!Array.isArray(items) || items.length === 0) {
                 console.warn(`No items for ${name}`);
@@ -457,7 +462,7 @@
             items.forEach(item => {
                 if (!item) return;
 
-                const safeId = `${name}-${item.replace(/\s+/g, '-')}`; // Avoid space in IDs
+                const safeId = `${name}-${item.replace(/\s+/g, '-')}`;
                 const isChecked = selectedItems.includes(item) ? 'checked' : '';
                 const li = `
                     <li class="${optionClass}">
@@ -475,6 +480,18 @@
                 $(this).prop('checked', selectAllCheckbox.checked);
             });
         }
+
+        // ✅ Change from submit event on a button (invalid) to click event
+        document.getElementById("openConfirmAllowedVotersModalBtn").addEventListener("click", function (e) {
+            e.preventDefault(); // Prevent form from submitting right away
+            $('#confirmAllowedVotersModal').modal('show');
+        });
+
+        // ✅ Submit form only after user confirms
+        document.getElementById("submitEditAllowedVotersBtn").addEventListener("click", function () {
+            $('#confirmAllowedVotersModal').modal('hide'); // Optional
+            document.getElementById("editAllowedVotersForm").submit();
+        });
     </script>
 
 
@@ -532,20 +549,6 @@
                 }
             });
         });
-    </script>
-
-    <script>
-                function setupSelectAllHandler(dropdownId, checkboxClass, allCheckboxId) {
-            $(`#${allCheckboxId}`).on('change', function () {
-                const isChecked = $(this).is(':checked');
-                $(`#${dropdownId} .${checkboxClass} input[type=checkbox]`).prop('checked', isChecked);
-            });
-        }
-
-        setupSelectAllHandler('editYearDropdown', 'editYearOption', 'editYearAll');
-        setupSelectAllHandler('editCourseDropdown', 'editCourseOption', 'editCourseAll');
-        setupSelectAllHandler('editSectionDropdown', 'editSectionOption', 'editSectionAll');
-
     </script>
 
 }

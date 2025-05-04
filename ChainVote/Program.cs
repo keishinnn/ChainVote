@@ -25,6 +25,9 @@ public class Program
         // ✅ Add MVC
         builder.Services.AddControllersWithViews();
 
+        // ✅ Register the background service
+        builder.Services.AddHostedService<ElectionStatusUpdaterService>();
+
         var app = builder.Build();
 
         // ✅ Seed Roles

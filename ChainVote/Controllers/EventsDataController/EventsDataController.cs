@@ -191,7 +191,7 @@ namespace ChainVote.Controllers
                 (Courses == null || Courses.Count == 0))
             {
                 TempData["ErrorMessage"] = "Please select at least one Year Level, Section, and Course.";
-                return RedirectToAction("EditElection", new { id = ElectionId });
+                return RedirectToAction("Elections", "AdminView");
             }
 
             // Handle 'All' selection
@@ -216,42 +216,33 @@ namespace ChainVote.Controllers
             return RedirectToAction("Elections", "AdminView");
         }
 
-        // GET method to fetch the allowed voters data for a given election
         public IActionResult GetAllowedVotersData(int electionId)
         {
-            // Fetch distinct Year Levels, Sections, and Courses for the election
-            var yearLevels = _context.EventsData
-                .Where(v => v.Id == electionId)
-                .Select(v => v.AllowedYearLevels)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
+            // ✅ Predefined values
+            var predefinedCourses = new List<string> { "BSCS", "BSIT", "BSIS", "BSDS", "BSEMC", "BSCpE" };
+            var predefinedYearLevels = new List<string> { "1st Year", "2nd Year", "3rd Year", "4th Year" };
+            var predefinedSections = Enumerable.Range('A', 'P' - 'A' + 1).Select(c => ((char)c).ToString()).ToList();
 
-            var sections = _context.EventsData
-                .Where(v => v.Id == electionId)
-                .Select(v => v.AllowedSections)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
-
-            var courses = _context.EventsData
-                .Where(v => v.Id == electionId)
-                .Select(v => v.AllowedCourses)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
-
-            // Fetch the election data to get the selected year levels, sections, and courses
+            // ✅ Fetch the event from the database
             var eventData = _context.EventsData.FirstOrDefault(e => e.Id == electionId);
 
-            // Parse the selected year levels, sections, and courses into lists
-            var selectedYearLevels = eventData?.AllowedYearLevels?.Split(',').ToList() ?? new List<string>();
-            var selectedSections = eventData?.AllowedSections?.Split(',').ToList() ?? new List<string>();
-            var selectedCourses = eventData?.AllowedCourses?.Split(',').ToList() ?? new List<string>();
+            // ✅ Parse stored selections
+            var selectedCourses = eventData?.AllowedCourses?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToList() ?? new List<string>();
+            var selectedYearLevels = eventData?.AllowedYearLevels?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToList() ?? new List<string>();
+            var selectedSections = eventData?.AllowedSections?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(c => c.Trim()).ToList() ?? new List<string>();
 
-            // Return the data as a JSON response for use in the modal
-            return Json(new { yearLevels, sections, courses, selectedYearLevels, selectedSections, selectedCourses });
+            // ✅ Return JSON data
+            return Json(new
+            {
+                predefinedCourses,
+                predefinedYearLevels,
+                predefinedSections,
+                selectedCourses,
+                selectedYearLevels,
+                selectedSections
+            });
         }
+
 
 
         private List<SelectListItem> GetElectionTypes()
