@@ -5,7 +5,7 @@
 
 <h2 class="mb-4">Registered Accounts</h2>
 
-<input type="hidden" id="getAccountsUrl" value="@Url.Action("GetAccounts", "AdminView")" />
+<input type="hidden" id="getAccountsUrl" value="@Url.Action("GetAccounts", "RegisteredAccounts")" />
 
 <table id="accountsTable" class="table table-bordered table-hover shadow-sm">
     <thead class="table-light">
@@ -29,17 +29,17 @@
                 "processing": true,
                 "serverSide": false,
                 "ajax": {
-                    "url": '@Url.Action("GetAccounts", "AdminView")',  // Razor now works!
+                    "url": '@Url.Action("GetAccounts", "RegisteredAccounts")',
                     "type": 'GET',
                     "dataSrc": "data"
                 },
                 "columns": [
                     { "data": "studentId" },
-                    { "data": "fullName" },  // Use fullName instead of email here
+                    { "data": "fullName" },
                     { "data": "course" },
                     { "data": "yearLevel" },
                     { "data": "section" },
-                    { "data": "email" },
+                    { "data": "email" }
                 ]
             });
         });

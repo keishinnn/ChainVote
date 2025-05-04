@@ -17,21 +17,23 @@ namespace ChainVote.Data
         public DbSet<CandidatesData> CandidatesData { get; set; }
         public DbSet<EventsData> EventsData { get; set; }
         public DbSet<OrganizationsData> OrganizationsData { get; set; }
-        public DbSet<Voter> Voters { get; set; }
+        public DbSet<Voters> Voters { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(builder);
+            base.OnModelCreating(modelBuilder);
 
-            builder.Entity<ApplicationUser>()
-                .HasIndex(u => u.StudentId)
-                .IsUnique()
-                .HasDatabaseName("IX_ApplicationUser_StudentId");
+            modelBuilder.Entity<Votes>()
+                .HasIndex(v => v.CandidateId)
+                .HasDatabaseName("IX_Votes_CandidateId");
 
-            builder.Entity<ApplicationUser>()
-                .HasIndex(u => u.Email)
-                .IsUnique()
-                .HasDatabaseName("IX_ApplicationUser_Email");
+            modelBuilder.Entity<Votes>()
+                .HasIndex(v => v.EventId)
+                .HasDatabaseName("IX_Votes_EventId");
+
+            modelBuilder.Entity<PositionsData>()
+                .HasIndex(p => p.EventId)
+                .HasDatabaseName("IX_Positions_EventId");
         }
 
     }

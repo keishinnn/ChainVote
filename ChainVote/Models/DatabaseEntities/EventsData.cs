@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
 
 namespace ChainVote.Models.DatabaseEntities
 {
+    public enum ElectionType
+    {
+        ClassOfficer,
+        CampusGovernment
+    }
+
     public class EventsData
     {
         [Key]
@@ -18,11 +23,11 @@ namespace ChainVote.Models.DatabaseEntities
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Start date and time is required.")]
-        [DataType(DataType.DateTime)]  // Use DataType.DateTime for date and time
+        [DataType(DataType.DateTime)]
         public DateTime StartDate { get; set; }
 
         [Required(ErrorMessage = "End date and time is required.")]
-        [DataType(DataType.DateTime)]  // Use DataType.DateTime for date and time
+        [DataType(DataType.DateTime)]
         public DateTime EndDate { get; set; }
 
         [MaxLength(500)]
@@ -36,7 +41,15 @@ namespace ChainVote.Models.DatabaseEntities
         [MaxLength(100)]
         public string Organizations { get; set; } = "DefaultOrganization";
 
-        [Required(ErrorMessage = "The Election Type is required.")]
-        public string ElectionType { get; set; }
+        public ElectionType ElectionType { get; set; }
+
+        [MaxLength(50)]
+        public string? AllowedYearLevels { get; set; }
+
+        [MaxLength(100)]
+        public string? AllowedSections { get; set; }
+
+        [MaxLength(100)]
+        public string? AllowedCourses { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using ChainVote.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations.Schema;
 
-public class Voter
+public class Voters
 {
     public int Id { get; set; }
 

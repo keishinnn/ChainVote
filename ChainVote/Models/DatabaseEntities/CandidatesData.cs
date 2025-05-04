@@ -22,5 +22,8 @@ namespace ChainVote.Models.DatabaseEntities
         [EmailAddress(ErrorMessage = "Invalid email address.")]
         [MaxLength(100)]
         public string Email { get; set; }
+
+        // Optional: Add an image URL for candidate photos (if needed)
+        public string CandidateImage { get; set; }
     }
 }

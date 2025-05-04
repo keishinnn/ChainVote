@@ -4,8 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using ChainVote.Data;
 using ChainVote.Models.DatabaseEntities;
 using ChainVote.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace ChainVote.Controllers.EventsDataController
+namespace ChainVote.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class EventsDataController : Controller
@@ -44,91 +45,227 @@ namespace ChainVote.Controllers.EventsDataController
                 {
                     StartDate = DateTime.Today,
                     EndDate = DateTime.Today.AddDays(1)
-                }
+                },
+                ElectionTypes = Enum.GetValues(typeof(ElectionType))
+                    .Cast<ElectionType>()
+                    .Select(e => new SelectListItem
+                    {
+                        Value = e.ToString(), // Value = "ClassOfficer" or "CampusGovernment"
+                        Text = e == ElectionType.CampusGovernment ? "CSG/USG" : "Class Officer"
+                    })
+                    .ToList()
             };
 
-            return View(model);
+            return View("~/Views/AdminView/Elections.cshtml", model);
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> AddElection(ElectionOverviewViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddElection(ElectionOverviewViewModel model, List<string> Courses, List<string> YearLevels, List<string> Sections)
         {
             _logger.LogInformation("AddElection called at {Time}", DateTime.Now);
+            _logger.LogInformation("SelectedElectionType received: {Type}", model.SelectedElectionType);
 
             if (model.NewEvent != null)
             {
                 model.NewEvent.Status ??= "Awaiting";
                 model.NewEvent.Email ??= User.Identity?.Name ?? "admin@example.com";
                 model.NewEvent.Organizations ??= "DefaultOrganization";
+
+                // Save selected courses/year levels/sections as comma-separated strings
+                model.NewEvent.AllowedCourses = Courses != null ? string.Join(",", Courses) : "";
+                model.NewEvent.AllowedYearLevels = YearLevels != null ? string.Join(",", YearLevels) : "";
+                model.NewEvent.AllowedSections = Sections != null ? string.Join(",", Sections) : "";
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    if (model.NewEvent.StartDate >= model.NewEvent.EndDate)
+                _logger.LogWarning("ModelState is invalid: {Errors}", string.Join(", ",
+                    ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))));
+
+                model.ElectionTypes = Enum.GetValues(typeof(ElectionType))
+                    .Cast<ElectionType>()
+                    .Select(e => new SelectListItem
                     {
-                        TempData["ErrorMessage"] = "Start Date must be before End Date.";
-                        return RedirectToAction("Elections");
-                    }
+                        Value = e.ToString(),
+                        Text = e == ElectionType.CampusGovernment ? "CSG/USG" : "Class Officer"
+                    })
+                    .ToList();
 
-                    _context.EventsData.Add(model.NewEvent);
-                    await _context.SaveChangesAsync();
-
-                    TempData["SuccessMessage"] = "Election created successfully!";
-                    return RedirectToAction("Elections");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Exception in AddElection");
-                    TempData["ErrorMessage"] = "An error occurred while creating the election: " + ex.Message;
-                    return RedirectToAction("Elections");
-                }
+                return View("~/Views/AdminView/Elections.cshtml", model);
             }
 
-            _logger.LogWarning("ModelState is invalid");
-
-            var allEvents = await _context.EventsData.ToListAsync();
-            var allVoters = await _context.Voters.ToListAsync();
-
-            var grouped = allEvents.Select(evt =>
+            try
             {
-                var voters = allVoters.Where(v => v.EventId == evt.Id).ToList();
-                return new ElectionSummary
+                _logger.LogInformation("Start Date: {StartDate}, End Date: {EndDate}",
+                    model.NewEvent.StartDate, model.NewEvent.EndDate);
+
+                if (model.NewEvent.StartDate >= model.NewEvent.EndDate)
                 {
-                    Event = evt,
-                    TotalVoters = voters.Count,
-                    TotalVoted = voters.Count(v => v.HasVoted)
-                };
-            }).ToList();
+                    TempData["ErrorMessage"] = "Start Date must be before End Date.";
+                    return RedirectToAction("Elections");
+                }
 
-            model.AwaitingElections = grouped.Where(e => e.Event.Status == "Awaiting").ToList();
-            model.InProgressElections = grouped.Where(e => e.Event.Status == "InProgress").ToList();
-            model.CompletedElections = grouped.Where(e => e.Event.Status == "Completed").ToList();
+                if (Enum.TryParse<ElectionType>(model.SelectedElectionType, out var parsedElectionType)
+                    && Enum.IsDefined(typeof(ElectionType), parsedElectionType))
+                {
+                    model.NewEvent.ElectionType = parsedElectionType;
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = $"Invalid election type selected: {model.SelectedElectionType}";
+                    return RedirectToAction("Elections");
+                }
 
-            model.NewEvent ??= new EventsData
+                _context.EventsData.Add(model.NewEvent);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Election created successfully!";
+                return RedirectToAction("Elections");
+            }
+            catch (Exception ex)
             {
-                StartDate = DateTime.Today,
-                EndDate = DateTime.Today.AddDays(1),
-                Status = "Awaiting",
-                Organizations = "DefaultOrganization"
-            };
-
-            TempData["ErrorMessage"] = "Failed to create election. Please check the form and try again.";
-            return View("Elections", model);
+                _logger.LogError(ex, "Exception in AddElection");
+                TempData["ErrorMessage"] = "An error occurred while creating the election: " + ex.Message;
+                return RedirectToAction("Elections");
+            }
         }
+
 
         public IActionResult EditElection(int id)
         {
             ViewBag.ElectionId = id;
-            return View();
+            return View(); // Create a view if needed
         }
 
         public IActionResult StopElection(int id)
         {
+            // Add logic here
             ViewBag.ElectionId = id;
-            // Logic to stop election (e.g., update status to "Stopped")
             return RedirectToAction("Elections");
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteElection(int id)
+        {
+            var eventToDelete = await _context.EventsData.FindAsync(id);
+            if (eventToDelete == null)
+            {
+                TempData["ErrorMessage"] = "Election not found.";
+                return RedirectToAction("Elections");
+            }
+
+            try
+            {
+                _context.EventsData.Remove(eventToDelete);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Election deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting election");
+                TempData["ErrorMessage"] = "Error deleting election: " + ex.Message;
+            }
+
+            return RedirectToAction("Elections");
+        }
+
+        // POST method to handle updating the allowed voters for an election
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAllowedVoters(int ElectionId, List<string> YearLevels, List<string> Sections, List<string> Courses)
+        {
+            // Fetch the election data from the database
+            var eventData = await _context.EventsData.FindAsync(ElectionId);
+            if (eventData == null)
+            {
+                TempData["ErrorMessage"] = "Election not found.";
+                return RedirectToAction("Elections", "AdminView");
+            }
+
+            // Validate if any selections are made for YearLevels, Sections, and Courses
+            if ((YearLevels == null || YearLevels.Count == 0) ||
+                (Sections == null || Sections.Count == 0) ||
+                (Courses == null || Courses.Count == 0))
+            {
+                TempData["ErrorMessage"] = "Please select at least one Year Level, Section, and Course.";
+                return RedirectToAction("EditElection", new { id = ElectionId });
+            }
+
+            // Handle 'All' selection
+            eventData.AllowedYearLevels = YearLevels.Contains("All") ? "All" : string.Join(",", YearLevels);
+            eventData.AllowedSections = Sections.Contains("All") ? "All" : string.Join(",", Sections);
+            eventData.AllowedCourses = Courses.Contains("All") ? "All" : string.Join(",", Courses);
+
+            try
+            {
+                // Update the event data and save changes
+                _context.Update(eventData);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Allowed voters updated successfully.";
+            }
+            catch (Exception ex)
+            {
+                // Log exception if necessary
+                TempData["ErrorMessage"] = "Failed to update allowed voters.";
+            }
+
+            // Redirect back to the elections page
+            return RedirectToAction("Elections", "AdminView");
+        }
+
+        // GET method to fetch the allowed voters data for a given election
+        public IActionResult GetAllowedVotersData(int electionId)
+        {
+            // Fetch distinct Year Levels, Sections, and Courses for the election
+            var yearLevels = _context.EventsData
+                .Where(v => v.Id == electionId)
+                .Select(v => v.AllowedYearLevels)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            var sections = _context.EventsData
+                .Where(v => v.Id == electionId)
+                .Select(v => v.AllowedSections)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            var courses = _context.EventsData
+                .Where(v => v.Id == electionId)
+                .Select(v => v.AllowedCourses)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            // Fetch the election data to get the selected year levels, sections, and courses
+            var eventData = _context.EventsData.FirstOrDefault(e => e.Id == electionId);
+
+            // Parse the selected year levels, sections, and courses into lists
+            var selectedYearLevels = eventData?.AllowedYearLevels?.Split(',').ToList() ?? new List<string>();
+            var selectedSections = eventData?.AllowedSections?.Split(',').ToList() ?? new List<string>();
+            var selectedCourses = eventData?.AllowedCourses?.Split(',').ToList() ?? new List<string>();
+
+            // Return the data as a JSON response for use in the modal
+            return Json(new { yearLevels, sections, courses, selectedYearLevels, selectedSections, selectedCourses });
+        }
+
+
+        private List<SelectListItem> GetElectionTypes()
+        {
+            return Enum.GetValues(typeof(ElectionType))
+                .Cast<ElectionType>()
+                .Select(e => new SelectListItem
+                {
+                    Value = e.ToString(),
+                    Text = e == ElectionType.CampusGovernment ? "CSG/USG" : "Class Officer"
+                })
+                .ToList();
+        }
+
+
     }
 }

@@ -1,5 +1,4 @@
-﻿@using ChainVote.Models.ViewModels
-@model ElectionOverviewViewModel
+﻿@model ChainVote.Models.ViewModels.ElectionOverviewViewModel
 
 @{
     ViewData["Title"] = "Elections";
@@ -55,8 +54,19 @@
 
                         <div class="d-flex gap-2 mt-3">
                             <a href="/AdminView/StartElection/@election.Event.Id" class="btn btn-success btn-sm">Start</a>
-                            <a href="/AdminView/EditPositions/@election.Event.Id" class="btn btn-outline-primary btn-sm">Edit Positions</a>
                             <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="openEditAllowedVotersModal(@election.Event.Id)">
+                                Edit Allowed Voters
+                            </button>
+
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteConfirmationModal"
+                                    data-election-id="@election.Event.Id"
+                                    data-election-name="@election.Event.EventName">
+                                Delete
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -80,8 +90,19 @@
 
                         <div class="d-flex gap-2 mt-3">
                             <a href="/AdminView/StopElection/@election.Event.Id" class="btn btn-danger btn-sm">Stop</a>
-                            <a href="/AdminView/EditPositions/@election.Event.Id" class="btn btn-outline-primary btn-sm">Edit Positions</a>
                             <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
+                            <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="openEditAllowedVotersModal(@election.Event.Id)">
+                                Edit Allowed Voters
+                            </button>
+
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteConfirmationModal"
+                                    data-election-id="@election.Event.Id"
+                                    data-election-name="@election.Event.EventName">
+                                Delete
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -89,6 +110,8 @@
         }
     </div>
 </div>
+
+
 
 
 @{
@@ -101,45 +124,430 @@
         <h5 class="mb-0">Create New Election</h5>
     </div>
     <div class="card-body">
-        <form asp-action="AddElection" method="post">
+        <form id="createElectionFormElement" asp-controller="EventsData" asp-action="AddElection" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger small"></div>
+
+            <!-- Election Title -->
             <div class="mb-3">
                 <label asp-for="NewEvent.EventName" class="form-label">Election Title</label>
                 <input asp-for="NewEvent.EventName" class="form-control" placeholder="Enter title..." />
                 <span asp-validation-for="NewEvent.EventName" class="text-danger small"></span>
             </div>
 
+            <!-- Start Date -->
             <div class="mb-3">
                 <label asp-for="NewEvent.StartDate" class="form-label">Start Date</label>
                 <input asp-for="NewEvent.StartDate" type="datetime-local" class="form-control" />
                 <span asp-validation-for="NewEvent.StartDate" class="text-danger small"></span>
             </div>
 
+            <!-- End Date -->
             <div class="mb-3">
                 <label asp-for="NewEvent.EndDate" class="form-label">End Date</label>
                 <input asp-for="NewEvent.EndDate" type="datetime-local" class="form-control" />
                 <span asp-validation-for="NewEvent.EndDate" class="text-danger small"></span>
             </div>
 
-            <!-- Hidden inputs to satisfy required validation -->
+            <div class="row mb-3">
+                <!-- Allowed Courses -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <div class="dropdown w-100">
+                            <button class="form-select text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Select Courses
+                            </button>
+                            <ul class="dropdown-menu w-100 px-3" id="courseDropdown">
+                                <li class="mb-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search course..." onkeyup="filterOptions(this, 'courseOption')" />
+                                </li>
+                                <li><input type="checkbox" class="form-check-input me-1" id="courseAll" /> <label for="courseAll">All</label></li>
+                                <li class="courseOption"><input type="checkbox" name="Courses" value="BSCS" class="form-check-input me-1" /> BSCS</li>
+                                <li class="courseOption"><input type="checkbox" name="Courses" value="BSIT" class="form-check-input me-1" /> BSIT</li>
+                                <li class="courseOption"><input type="checkbox" name="Courses" value="BSIS" class="form-check-input me-1" /> BSIS</li>
+                                <li class="courseOption"><input type="checkbox" name="Courses" value="BSDS" class="form-check-input me-1" /> BSDS</li>
+                                <li class="courseOption"><input type="checkbox" name="Courses" value="BSEMC" class="form-check-input me-1" /> BSEMC</li>
+                                <li class="courseOption"><input type="checkbox" name="Courses" value="BSCpE" class="form-check-input me-1" /> BSCpE</li>
+                            </ul>
+                            <label class="form-label">Allowed Courses</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allowed Year Levels -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <div class="dropdown w-100">
+                            <button class="form-select text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Select Year Levels
+                            </button>
+                            <ul class="dropdown-menu w-100 px-3" id="yearDropdown">
+                                <li class="mb-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search year..." onkeyup="filterOptions(this, 'yearOption')" />
+                                </li>
+                                <li><input type="checkbox" class="form-check-input me-1" id="yearAll" /> <label for="yearAll">All</label></li>
+                                <li class="yearOption"><input type="checkbox" name="YearLevels" value="1st Year" class="form-check-input me-1" /> 1st Year</li>
+                                <li class="yearOption"><input type="checkbox" name="YearLevels" value="2nd Year" class="form-check-input me-1" /> 2nd Year</li>
+                                <li class="yearOption"><input type="checkbox" name="YearLevels" value="3rd Year" class="form-check-input me-1" /> 3rd Year</li>
+                                <li class="yearOption"><input type="checkbox" name="YearLevels" value="4th Year" class="form-check-input me-1" /> 4th Year</li>
+                            </ul>
+                            <label class="form-label">Allowed Year Levels</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allowed Sections -->
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <div class="dropdown w-100">
+                            <button class="form-select text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Select Sections
+                            </button>
+                            <ul class="dropdown-menu w-100 px-3" id="sectionDropdown">
+                                <li class="mb-2">
+                                    <input type="text" class="form-control form-control-sm" placeholder="Search section..." onkeyup="filterOptions(this, 'sectionOption')" />
+                                </li>
+                                <li><input type="checkbox" class="form-check-input me-1" id="sectionAll" /> <label for="sectionAll">All</label></li>
+                                @for (char sec = 'A'; sec <= 'P'; sec++)
+                                {
+                                    <li class="sectionOption">
+                                        <input type="checkbox" name="Sections" value="@sec" class="form-check-input me-1" /> @sec
+                                    </li>
+                                }
+                            </ul>
+                            <label class="form-label">Allowed Sections</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Hidden Inputs -->
             <input type="hidden" asp-for="NewEvent.Email" value="@User.Identity?.Name ?? " admin@example.com"" />
             <input type="hidden" asp-for="NewEvent.Status" value="Awaiting" />
             <input type="hidden" asp-for="NewEvent.Organizations" value="DefaultOrganization" />
 
-@*             <div class="form-group mb-3">
-                <label for="NewEvent_ElectionType">Election Type</label>
-                <select asp-for="NewEvent.ElectionType" asp-items="NewEvent.ElectionTypes" class="form-control">
+            <!-- Election Type -->
+            <div class="form-group mb-3">
+                <label asp-for="SelectedElectionType" class="form-label">Election Type</label>
+                <select asp-for="SelectedElectionType" asp-items="Model.ElectionTypes" class="form-control">
                     <option value="">-- Select Election Type --</option>
                 </select>
-            </div> *@
-
-            <button type="submit" class="btn btn-primary">Create Election</button>
+                <span asp-validation-for="SelectedElectionType" class="text-danger small"></span>
+            </div>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmCreateElectionModal">
+                Create Election
+            </button>
         </form>
-
     </div>
 </div>
+
+
+
+<!-- Shared Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the election <strong id="electionName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteElectionForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Allowed Voters Modal -->
+<div class="modal fade" id="editAllowedVotersModal" tabindex="-1" aria-labelledby="editAllowedVotersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editAllowedVotersModalLabel">Edit Allowed Voters</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editAllowedVotersForm" method="post" asp-controller="EventsData" asp-action="UpdateAllowedVoters">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editElectionId" name="ElectionId" />
+
+                    <div class="row g-4">
+
+                        <!-- Courses -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Allowed Courses</label>
+                            <div class="dropdown w-100">
+                                <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Select Courses
+                                </button>
+                                <ul class="dropdown-menu w-100 px-3" id="editCourseDropdown">
+                                    <li class="mb-2">
+                                        <input type="text" class="form-control form-control-sm" placeholder="Search..." onkeyup="filterOptions(this, 'editCourseOption')" />
+                                    </li>
+                                    <li>
+                                        <input type="checkbox" class="form-check-input me-1" id="editCourseAll" onclick="selectAllOptions(this, 'editCourseDropdown')" />
+                                        <label for="editCourseAll">Select All</label>
+                                    </li>
+                                    <!-- Course items will be dynamically inserted here -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Year Levels -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Allowed Year Levels</label>
+                            <div class="dropdown w-100">
+                                <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Select Year Levels
+                                </button>
+                                <ul class="dropdown-menu w-100 px-3" id="editYearDropdown">
+                                    <li class="mb-2">
+                                        <input type="text" class="form-control form-control-sm" placeholder="Search..." onkeyup="filterOptions(this, 'editYearOption')" />
+                                    </li>
+                                    <li>
+                                        <input type="checkbox" class="form-check-input me-1" id="editYearAll" onclick="selectAllOptions(this, 'editYearDropdown')" />
+                                        <label for="editYearAll">Select All</label>
+                                    </li>
+                                    <!-- Year level items will be dynamically inserted here -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Sections -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Allowed Sections</label>
+                            <div class="dropdown w-100">
+                                <button class="btn btn-light dropdown-toggle w-100 text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Select Sections
+                                </button>
+                                <ul class="dropdown-menu w-100 px-3" id="editSectionDropdown">
+                                    <li class="mb-2">
+                                        <input type="text" class="form-control form-control-sm" placeholder="Search..." onkeyup="filterOptions(this, 'editSectionOption')" />
+                                    </li>
+                                    <li>
+                                        <input type="checkbox" class="form-check-input me-1" id="editSectionAll" onclick="selectAllOptions(this, 'editSectionDropdown')" />
+                                        <label for="editSectionAll">Select All</label>
+                                    </li>
+                                    <!-- Section items will be dynamically inserted here -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-success px-4">Save Changes</button>
+                        <button type="button" class="btn btn-secondary ms-2" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Confirmation Modal For Edit Allowed Voters -->
+<div class="modal fade" id="confirmAllowedVotersModal" tabindex="-1" aria-labelledby="confirmAllowedVotersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="confirmAllowedVotersModalLabel">Confirm Changes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to update the allowed year levels and sections?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Review</button>
+                <button type="button" class="btn btn-primary" id="submitEditAllowedVotersBtn">Yes, Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal For Creating Election -->
+<div class="modal fade" id="confirmCreateElectionModal" tabindex="-1" aria-labelledby="confirmCreateElectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-warning">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="confirmCreateElectionModalLabel">Confirm Creation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to create this election?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmCreateElectionBtn" class="btn btn-primary">Yes, Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 @section Scripts {
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        const modal = document.getElementById('deleteConfirmationModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const electionId = button.getAttribute('data-election-id');
+            const electionName = button.getAttribute('data-election-name');
+
+            const electionNameSpan = modal.querySelector('#electionName');
+            const deleteForm = modal.querySelector('#deleteElectionForm');
+
+            electionNameSpan.textContent = electionName;
+
+            // Update form action to include the ID
+            deleteForm.action = '/EventsData/DeleteElection/' + electionId;
+        });
+    </script>
+
+    <script>
+        function openEditAllowedVotersModal(electionId) {
+            $('#editAllowedVotersModal').modal('show');
+            $('#editElectionId').val(electionId);
+
+            $.ajax({
+                url: '/EventsData/GetAllowedVotersData',
+                type: 'GET',
+                data: { electionId: electionId },
+                success: function (data) {
+                    console.log("Fetched data:", data);
+                    const { yearLevels, sections, courses, selectedYearLevels, selectedSections, selectedCourses } = data;
+
+                    populateDropdown('editYearDropdown', 'editYearOption', 'AllowedYearLevels', yearLevels, selectedYearLevels);
+                    populateDropdown('editSectionDropdown', 'editSectionOption', 'AllowedSections', sections, selectedSections);
+                    populateDropdown('editCourseDropdown', 'editCourseOption', 'AllowedCourses', courses, selectedCourses);
+                },
+                error: function (err) {
+                    console.error("Error fetching allowed voters data:", err);
+                }
+            });
+        }
+
+        function populateDropdown(containerId, optionClass, name, items, selectedItems) {
+            const container = $('#' + containerId);
+            container.find('li.' + optionClass).remove(); // Clear old dynamic options
+
+            if (!Array.isArray(items) || items.length === 0) {
+                console.warn(`No items for ${name}`);
+                return;
+            }
+
+            selectedItems = selectedItems || [];
+
+            items.forEach(item => {
+                if (!item) return;
+
+                const safeId = `${name}-${item.replace(/\s+/g, '-')}`; // Avoid space in IDs
+                const isChecked = selectedItems.includes(item) ? 'checked' : '';
+                const li = `
+                    <li class="${optionClass}">
+                        <input type="checkbox" class="form-check-input me-1" name="${name}" value="${item}" id="${safeId}" ${isChecked} />
+                        <label for="${safeId}">${item}</label>
+                    </li>
+                `;
+                container.append(li);
+            });
+        }
+
+        function selectAllOptions(selectAllCheckbox, dropdownId) {
+            const dropdown = $('#' + dropdownId);
+            dropdown.find('input[type="checkbox"]').each(function () {
+                $(this).prop('checked', selectAllCheckbox.checked);
+            });
+        }
+    </script>
+
+
+
+    <!-- Script for Checkbox Toggle -->
+    <script>
+        function filterOptions(inputElement, className) {
+            const filter = inputElement.value.toUpperCase();
+            const options = document.querySelectorAll(`.${className}`);
+
+            options.forEach(option => {
+                const text = option.textContent || option.innerText;
+                option.style.display = text.toUpperCase().includes(filter) ? '' : 'none';
+            });
+        }
+
+        function setupDropdownToggle(allId, className) {
+            const allBox = document.getElementById(allId);
+            const checkboxes = document.querySelectorAll(`.${className} input[type="checkbox"]`);
+
+            if (!allBox) return;
+
+            allBox.addEventListener('change', function () {
+                checkboxes.forEach(cb => cb.checked = allBox.checked);
+            });
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', function () {
+                    if (!cb.checked) {
+                        allBox.checked = false;
+                    } else if (Array.from(checkboxes).every(c => c.checked)) {
+                        allBox.checked = true;
+                    }
+                });
+            });
+        }
+
+        // Initialize all dropdowns
+        document.addEventListener("DOMContentLoaded", () => {
+            setupDropdownToggle('courseAll', 'courseOption');
+            setupDropdownToggle('yearAll', 'yearOption');
+            setupDropdownToggle('sectionAll', 'sectionOption');
+        });
+    </script>
+
+    <!-- Script Confirmation on Creating Election -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('confirmCreateElectionBtn').addEventListener('click', function () {
+                const form = document.getElementById('createElectionFormElement');
+                if (form) {
+                    form.submit();
+                } else {
+                    console.error("Create Election form not found.");
+                }
+            });
+        });
+    </script>
+
+    <script>
+                function setupSelectAllHandler(dropdownId, checkboxClass, allCheckboxId) {
+            $(`#${allCheckboxId}`).on('change', function () {
+                const isChecked = $(this).is(':checked');
+                $(`#${dropdownId} .${checkboxClass} input[type=checkbox]`).prop('checked', isChecked);
+            });
+        }
+
+        setupSelectAllHandler('editYearDropdown', 'editYearOption', 'editYearAll');
+        setupSelectAllHandler('editCourseDropdown', 'editCourseOption', 'editCourseAll');
+        setupSelectAllHandler('editSectionDropdown', 'editSectionOption', 'editSectionAll');
+
+    </script>
+
 }
+
+
