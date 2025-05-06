@@ -23,11 +23,22 @@ namespace ChainVote.Controllers
         public async Task<IActionResult> Elections()
         {
             var allEvents = await _context.EventsData.ToListAsync();
-            var allVoters = await _context.Voters.ToListAsync();
+            var allUsers = await _context.Users.ToListAsync();
 
             var grouped = allEvents.Select(evt =>
             {
-                var voters = allVoters.Where(v => v.EventId == evt.Id).ToList();
+                // Parse the allowed values from the event
+                var allowedYearLevels = evt.AllowedYearLevels?.Split(',') ?? new string[] { };
+                var allowedSections = evt.AllowedSections?.Split(',') ?? new string[] { };
+                var allowedCourses = evt.AllowedCourses?.Split(',') ?? new string[] { };
+
+                // Filter users by matching the allowed criteria
+                var voters = allUsers.Where(u =>
+                    allowedYearLevels.Contains(u.YearLevel) &&
+                    allowedSections.Contains(u.Section) &&
+                    allowedCourses.Contains(u.Course)
+                ).ToList();
+
                 return new ElectionSummary
                 {
                     Event = evt,
@@ -71,6 +82,7 @@ namespace ChainVote.Controllers
 
 
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddElection(ElectionOverviewViewModel model, List<string> Courses, List<string> YearLevels, List<string> Sections)
@@ -82,7 +94,7 @@ namespace ChainVote.Controllers
             {
                 model.NewEvent.Status = ElectionStatus.Awaiting;
                 model.NewEvent.Email ??= User.Identity?.Name ?? "admin@example.com";
-                model.NewEvent.Organizations ??= "DefaultOrganization";
+                model.NewEvent.Organizations ??= null;
 
                 model.NewEvent.AllowedCourses = Courses != null ? string.Join(",", Courses) : "";
                 model.NewEvent.AllowedYearLevels = YearLevels != null ? string.Join(",", YearLevels) : "";

@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using ChainVote.Models.Identity;
 
 namespace ChainVote.Models.DatabaseEntities
 {
@@ -7,23 +9,19 @@ namespace ChainVote.Models.DatabaseEntities
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Candidate name is required.")]
-        [MaxLength(100)]
-        public string Name { get; set; }
+        // Foreign key to ApplicationUser
+        [Required]
+        public string ApplicationUserId { get; set; }
 
-        [Required(ErrorMessage = "Position is required.")]
-        [MaxLength(50)]
-        public string Position { get; set; }
+        [ForeignKey("ApplicationUserId")]
+        public ApplicationUser ApplicationUser { get; set; }
 
-        [MaxLength(100)]
-        public string PartyList { get; set; }
+        // Nullable FK to Organization
+        public int? OrganizationId { get; set; }
 
-        [Required(ErrorMessage = "Candidate email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
-        [MaxLength(100)]
-        public string Email { get; set; }
+        [ForeignKey("OrganizationId")]
+        public OrganizationsData Organization { get; set; }
 
-        // Optional: Add an image URL for candidate photos (if needed)
-        public string CandidateImage { get; set; }
     }
+
 }

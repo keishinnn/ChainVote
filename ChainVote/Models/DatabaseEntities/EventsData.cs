@@ -41,10 +41,6 @@ namespace ChainVote.Models.DatabaseEntities
 
         public ElectionStatus Status { get; set; }
 
-        [Required(ErrorMessage = "The Organizations field is required.")]
-        [MaxLength(100)]
-        public string Organizations { get; set; } = "DefaultOrganization";
-
         public ElectionType ElectionType { get; set; }
 
         [MaxLength(50)]
@@ -55,5 +51,8 @@ namespace ChainVote.Models.DatabaseEntities
 
         [MaxLength(100)]
         public string? AllowedCourses { get; set; }
+
+        public ICollection<OrganizationsData> Organizations { get; set; }
+
     }
 }

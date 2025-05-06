@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ChainVote.Models.DatabaseEntities;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace ChainVote.Models.Identity
 {
@@ -12,5 +14,7 @@ namespace ChainVote.Models.Identity
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Course { get; set; }
+        public bool HasVoted { get; set; }
+        public ICollection<CandidatesData> Candidates { get; set; }
     }
 }

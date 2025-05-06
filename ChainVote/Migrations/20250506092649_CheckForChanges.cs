@@ -5,25 +5,25 @@
 namespace ChainVote.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAllowedCourseToEventsData : Migration
+    public partial class CheckForChanges : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
-                name: "AllowedCourses",
-                table: "EventsData",
-                type: "nvarchar(100)",
-                maxLength: 100,
-                nullable: true);
+                name: "Status",
+                table: "CandidatesData",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "AllowedCourses",
-                table: "EventsData");
+                name: "Status",
+                table: "CandidatesData");
         }
     }
 }

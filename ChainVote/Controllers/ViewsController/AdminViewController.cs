@@ -41,6 +41,11 @@ namespace ChainVote.Controllers.ViewsController
             return View();
         }
 
+        public IActionResult Candidates()
+        {
+            return View();
+        }
+
         public IActionResult Accounts()
         {
             return View();

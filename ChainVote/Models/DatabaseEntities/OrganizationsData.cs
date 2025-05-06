@@ -23,5 +23,8 @@ namespace ChainVote.Models.DatabaseEntities
 
         [ForeignKey("EventId")]
         public EventsData Event { get; set; }
+
+        // Navigation property
+        public ICollection<CandidatesData> Candidates { get; set; }
     }
 }

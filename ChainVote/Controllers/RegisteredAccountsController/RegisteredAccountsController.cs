@@ -4,6 +4,7 @@ using ChainVote.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using ChainVote.Data;
 using ChainVote.Models.DatabaseEntities;
+using ChainVote.Utilities;
 
 namespace ChainVote.Controllers.RegisteredAccountsController
 {
@@ -36,35 +37,14 @@ namespace ChainVote.Controllers.RegisteredAccountsController
                 {
                     studentId = u.StudentId,
                     fullName = u.FirstName + " " + u.LastName,
-                    yearLevel = GetYearWithSuffix(u.YearLevel),
+                    yearLevel = FormatHelpers.GetYearWithSuffix(u.YearLevel),
                     course = u.Course,
-                    section = GetSectionWithYear(u.YearLevel, u.Section),
+                    section = FormatHelpers.GetSectionWithYear(u.YearLevel, u.Section),
                     email = u.Email
                 })
                 .ToList();
 
             return Json(new { data = accounts });
-        }
-
-        private string GetYearWithSuffix(string year)
-        {
-            if (!int.TryParse(year, out int yearNum))
-                return $"{year} Year";
-
-            string suffix = yearNum switch
-            {
-                1 => "st",
-                2 => "nd",
-                3 => "rd",
-                _ => "th"
-            };
-
-            return $"{yearNum}{suffix} Year";
-        }
-
-        private string GetSectionWithYear(string year, string section)
-        {
-            return $"{year}{section}";
         }
 
         public IActionResult Voters()

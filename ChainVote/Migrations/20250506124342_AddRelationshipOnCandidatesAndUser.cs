@@ -5,7 +5,7 @@
 namespace ChainVote.Migrations
 {
     /// <inheritdoc />
-    public partial class AddEnumToStatusEventsData : Migration
+    public partial class AddRelationshipOnCandidatesAndUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

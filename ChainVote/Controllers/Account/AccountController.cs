@@ -112,7 +112,7 @@ namespace ChainVote.Controllers
             {
                 await _userManager.AddToRoleAsync(newUser, "Voter");
                 TempData["Success"] = "Registration successful. Please log in.";
-                return RedirectToAction("Login", "UserView");
+                return RedirectToAction("Register", "Account");
             }
 
             foreach (var error in result.Errors)
@@ -154,7 +154,10 @@ namespace ChainVote.Controllers
                 Email = adminAccount.Email,
                 StudentId = "Admin123",
                 Section = "Admin",     
-                YearLevel = "Admin"  
+                YearLevel = "Admin",
+                Course = "Admin",
+                FirstName = "Admin",
+                LastName = "Admin"
             };
 
             var result = await _userManager.CreateAsync(newUser, adminAccount.Password);
