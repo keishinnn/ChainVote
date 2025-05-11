@@ -240,22 +240,26 @@
                 positions.forEach(pos => {
                     const li = document.createElement("li");
                     li.className = "list-group-item d-flex justify-content-between align-items-center";
+                    li.dataset.position = pos; // store position name
 
                     const span = document.createElement("span");
                     span.textContent = pos;
 
-                    const linkBtn = document.createElement("button");
-                    linkBtn.type = "button";
-                    linkBtn.className = "btn btn-sm btn-link";
-                    linkBtn.textContent = "Assign";
-                    linkBtn.onclick = function () {
-                        openAssignCandidateModal(pos);
-                    };
+                    const candidateInfo = document.createElement("small");
+                    candidateInfo.className = "text-success ms-2 assigned-candidate"; // for showing candidate name
 
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = "btn btn-sm btn-link assign-btn";
+                    button.textContent = "Assign";
+                    button.onclick = () => openAssignCandidateModal(pos, li);
+
+                    span.appendChild(candidateInfo);
                     li.appendChild(span);
-                    li.appendChild(linkBtn);
+                    li.appendChild(button);
                     list.appendChild(li);
                 });
+               
             } else if (value === "Custom") {
                 // Show custom positions input section
                 customContainer.classList.remove("d-none");
@@ -263,14 +267,12 @@
         });
 
         // Show Assign Candidate modal and load candidates for the selected position
-        async function openAssignCandidateModal(position) {
+        async function openAssignCandidateModal(position, listItem) {
             const modal = new bootstrap.Modal(document.getElementById("assignCandidateModal"));
             modal.show();
 
-            // Fetch candidate list from the server
             const candidates = await fetchCandidatesForPosition(position);
 
-            // Populate dropdown with candidates
             const candidateSelect = document.getElementById("candidateSelect");
             candidateSelect.innerHTML = "";
             candidates.forEach(candidate => {
@@ -280,18 +282,48 @@
                 candidateSelect.appendChild(option);
             });
 
-            // Handle Assign button click inside the modal
+            // Assign Button logic
             const assignButton = document.getElementById("assignCandidateBtn");
             assignButton.onclick = function () {
                 const selectedCandidateId = candidateSelect.value;
+                const selectedCandidateName = candidateSelect.options[candidateSelect.selectedIndex].text;
+
                 if (selectedCandidateId) {
-                    alert(`Assigned ${position} to Candidate ID: ${selectedCandidateId}`);
+                    // Simulate successful link (replace with real POST logic)
+                    alert(`Assigned ${position} to ${selectedCandidateName}`);
                     modal.hide();
+
+                    // Update the button and candidate display
+                    const assignBtn = listItem.querySelector(".assign-btn");
+                    assignBtn.textContent = "Unassign";
+                    assignBtn.classList.remove("btn-link");
+                    assignBtn.classList.add("btn-danger");
+                    assignBtn.onclick = () => unassignCandidate(position, listItem); // toggle
+
+                    // Show candidate name beside position
+                    const candidateSpan = listItem.querySelector(".assigned-candidate");
+                    candidateSpan.textContent = ` - ${selectedCandidateName}`;
                 } else {
                     alert("Please select a candidate.");
                 }
             };
         }
+
+         function unassignCandidate(position, listItem) {
+            // Simulate unassignment (replace with POST if needed)
+            alert(`Unassigned candidate from ${position}`);
+
+            // Reset button and candidate display
+            const assignBtn = listItem.querySelector(".assign-btn");
+            assignBtn.textContent = "Assign";
+            assignBtn.classList.remove("btn-danger");
+            assignBtn.classList.add("btn-link");
+            assignBtn.onclick = () => openAssignCandidateModal(position, listItem);
+
+            const candidateSpan = listItem.querySelector(".assigned-candidate");
+            candidateSpan.textContent = "";
+        }
+
 
         // Fetch available candidates for assignment
         async function fetchCandidatesForPosition(position) {
