@@ -7,6 +7,7 @@ namespace ChainVote.Models.DatabaseEntities
         ClassOfficer,
         CampusGovernment
     }
+
     public enum ElectionStatus
     {
         Awaiting,
@@ -19,20 +20,20 @@ namespace ChainVote.Models.DatabaseEntities
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Event name is required.")]
+        [Required]
         [MaxLength(100)]
         public string EventName { get; set; }
 
-        [Required(ErrorMessage = "Creator/Admin email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [Required]
+        [EmailAddress]
         [MaxLength(100)]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Start date and time is required.")]
+        [Required]
         [DataType(DataType.DateTime)]
         public DateTime StartDate { get; set; }
 
-        [Required(ErrorMessage = "End date and time is required.")]
+        [Required]
         [DataType(DataType.DateTime)]
         public DateTime EndDate { get; set; }
 
@@ -40,7 +41,6 @@ namespace ChainVote.Models.DatabaseEntities
         public string? Description { get; set; }
 
         public ElectionStatus Status { get; set; }
-
         public ElectionType ElectionType { get; set; }
 
         [MaxLength(50)]
@@ -52,7 +52,7 @@ namespace ChainVote.Models.DatabaseEntities
         [MaxLength(100)]
         public string? AllowedCourses { get; set; }
 
-        public ICollection<OrganizationsData> Organizations { get; set; }
-
+        public ICollection<OrganizationsData> Organizations { get; set; } = new List<OrganizationsData>();
+        public ICollection<OrganizationPosition> Positions { get; set; } = new List<OrganizationPosition>();
     }
 }

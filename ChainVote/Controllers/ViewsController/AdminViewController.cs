@@ -38,7 +38,7 @@ namespace ChainVote.Controllers.ViewsController
 
         public IActionResult Organizations()
         {
-            return View();
+            return RedirectToAction("Organizations", "OrganizationsData");
         }
 
         public IActionResult Candidates()

@@ -1,24 +1,471 @@
-﻿@{
+﻿@model ChainVote.Models.ViewModels.OrganizationPageViewModel
+
+@{
     ViewData["Title"] = "Organizations";
     Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
 }
 
-<h2 class="mb-4">Edit Partylist Contents</h2>
+<h2 class="mb-4">Manage Organizations</h2>
 
-<div class="row row-cols-1 row-cols-md-2 g-4">
-    <!-- Example Partylist Card -->
-    <div class="col">
-        <div class="card shadow-sm h-100">
-            <img src="/images/partylists/sample-partylist.png" class="card-img-top" alt="Partylist Logo">
-            <div class="card-body">
-                <h5 class="card-title">Partylist Name</h5>
-                <p class="card-text">Agenda: Free tuition, more student activities, and transparent leadership.</p>
-                <a href="/AdminView/EditPartylist/1" class="btn btn-outline-primary btn-sm">
-                    <i class="bi bi-pencil-square me-1"></i>Edit Partylist
-                </a>
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addPartylistModal">
+    <i class="bi bi-plus-lg me-1"></i> Add Partylist
+</button>
+
+<!-- Organization Tabs -->
+<ul class="nav nav-tabs" id="organizationTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="organizations-tab" data-bs-toggle="tab" data-bs-target="#organizations" type="button" role="tab">
+            Organizations
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content mt-3">
+    <div class="tab-pane fade show active" id="organizations" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var org in Model.Organizations)
+            {
+                var eventData = Model.Events.FirstOrDefault(e => e.Id == org.EventId);
+
+                <div class="col">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title mb-2">@org.Name</h5>
+                            <p class="card-subtitle text-muted mb-1">Election Type: @org.EventName</p>
+                            <p class="mb-2">
+                                <strong>Linked Event:</strong>
+                                @(eventData != null ? eventData.EventName : "None")
+                            </p>
+
+                            @if (org.Positions != null && org.Positions.Any())
+                            {
+                                <div class="mb-2">
+                                    <strong>Positions:</strong>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach (var position in org.Positions)
+                                        {
+                                            <li>@position</li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+
+                            <div class="mt-auto d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        onclick="openEditOrganizationModal(@org.Id)">
+                                    Edit
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmationModal"
+                                        data-organization-id="@org.Id"
+                                        data-organization-name="@org.Name">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Add Partylist Modal -->
+<div class="modal fade" id="addPartylistModal" tabindex="-1" aria-labelledby="addPartylistModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addPartylistModalLabel">
+                    <i class="bi bi-building me-2"></i>Add Partylist
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="partylistForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Partylist Name</label>
+                        <input type="text" class="form-control" name="Name" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Election Type</label>
+                        <select class="form-select" name="ElectionType" id="electionTypeSelect" required>
+                            <option selected disabled value="">-- Select Election Type --</option>
+                            <option value="CSG">Campus Student Government (CSG)</option>
+                            <option value="USG">University Student Government (USG)</option>
+                            <option value="Custom">Custom Organization</option>
+                        </select>
+                    </div>
+
+                    <!-- Predefined Positions -->
+                    <div id="predefinedPositions" class="mb-3 d-none">
+                        <label class="form-label">Positions</label>
+                        <ul class="list-group" id="positionsList"></ul>
+                    </div>
+
+                    <!-- Custom Position -->
+                    <div id="customPositionsContainer" class="mb-3 d-none">
+                        <label class="form-label">Custom Positions</label>
+                        <div id="customPositionsList"></div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addCustomPosition()">+ Add Position</button>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Create Partylist</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Candidate Modal -->
+<div class="modal fade" id="assignCandidateModal" tabindex="-1" aria-labelledby="assignCandidateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="assignCandidateModalLabel">Assign Candidate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Select Candidate</label>
+                    <select class="form-select" id="candidateSelect">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="assignCandidateBtn">Assign</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
-
-    <!-- Add more cards dynamically per partylist -->
 </div>
+
+
+<!-- Edit Partylist Modal -->
+<div class="modal fade" id="editPartylistModal" tabindex="-1" aria-labelledby="editPartylistModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPartylistModalLabel">Edit Partylist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editPartylistId" />
+                <div class="mb-3">
+                    <label for="editPartylistName" class="form-label">Partylist Name</label>
+                    <input type="text" class="form-control" id="editPartylistName" />
+                </div>
+                <div class="mb-3">
+                    <label for="editElectionType" class="form-label">Election Type</label>
+                    <input type="text" class="form-control" id="editElectionType" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Positions</label>
+                    <ul class="list-group" id="editPositionsList"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shared Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the election <strong id="electionName"></strong>?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteElectionForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        // Define the standard positions for CSG and USG election types
+        const csgPositions = [
+            "President", "Vice President", "Senator",
+            "Communication Secretary", "Information Secretary", "Treasurer", "Auditor"
+        ];
+
+        const usgPositions = [
+            "President", "Vice President", "Secretary",
+            "Chairperson for Student Programs and Services",
+            "Chairperson for Student Welfare", "Chairperson for Student Development"
+        ];
+
+        // Handle change in election type dropdown
+        document.getElementById("electionTypeSelect").addEventListener("change", function () {
+            const value = this.value;
+            const predefinedContainer = document.getElementById("predefinedPositions"); // Container for predefined positions
+            const customContainer = document.getElementById("customPositionsContainer"); // Container for custom positions
+            const list = document.getElementById("positionsList"); // List element to render predefined positions
+
+            list.innerHTML = ""; // Clear existing list
+            predefinedContainer.classList.add("d-none");
+            customContainer.classList.add("d-none");
+
+            if (value === "CSG" || value === "USG") {
+                // Show predefined positions
+                predefinedContainer.classList.remove("d-none");
+                const positions = value === "CSG" ? csgPositions : usgPositions;
+
+                // Dynamically create list items with assign buttons
+                positions.forEach(pos => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item d-flex justify-content-between align-items-center";
+
+                    const span = document.createElement("span");
+                    span.textContent = pos;
+
+                    const linkBtn = document.createElement("button");
+                    linkBtn.type = "button";
+                    linkBtn.className = "btn btn-sm btn-link";
+                    linkBtn.textContent = "Assign";
+                    linkBtn.onclick = function () {
+                        openAssignCandidateModal(pos);
+                    };
+
+                    li.appendChild(span);
+                    li.appendChild(linkBtn);
+                    list.appendChild(li);
+                });
+            } else if (value === "Custom") {
+                // Show custom positions input section
+                customContainer.classList.remove("d-none");
+            }
+        });
+
+        // Show Assign Candidate modal and load candidates for the selected position
+        async function openAssignCandidateModal(position) {
+            const modal = new bootstrap.Modal(document.getElementById("assignCandidateModal"));
+            modal.show();
+
+            // Fetch candidate list from the server
+            const candidates = await fetchCandidatesForPosition(position);
+
+            // Populate dropdown with candidates
+            const candidateSelect = document.getElementById("candidateSelect");
+            candidateSelect.innerHTML = "";
+            candidates.forEach(candidate => {
+                const option = document.createElement("option");
+                option.value = candidate.id;
+                option.textContent = candidate.name;
+                candidateSelect.appendChild(option);
+            });
+
+            // Handle Assign button click inside the modal
+            const assignButton = document.getElementById("assignCandidateBtn");
+            assignButton.onclick = function () {
+                const selectedCandidateId = candidateSelect.value;
+                if (selectedCandidateId) {
+                    alert(`Assigned ${position} to Candidate ID: ${selectedCandidateId}`);
+                    modal.hide();
+                } else {
+                    alert("Please select a candidate.");
+                }
+            };
+        }
+
+        // Fetch available candidates for assignment
+        async function fetchCandidatesForPosition(position) {
+            try {
+                const response = await fetch('@Url.Action("GetCandidates", "OrganizationsData")');
+                const result = await response.json();
+                return result.data; // Returns array of candidates
+            } catch (error) {
+                console.error("Error fetching candidates:", error);
+                return [];
+            }
+        }
+    </script>
+
+    <script>
+        // Handle candidate linking to a position via POST request
+        assignCandidateBtn.onclick = async function () {
+            const selectedCandidateId = candidateSelect.value;
+            if (selectedCandidateId) {
+                try {
+                    const response = await fetch('/OrganizationPositions/LinkCandidate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({
+                            positionId: currentPositionId,
+                            candidateId: selectedCandidateId
+                        })
+                    });
+
+                    if (response.ok) {
+                        alert("Successfully assigned candidate!");
+                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById("assignCandidateModal"));
+                        modalInstance.hide();
+                    } else {
+                        alert("Failed to assign candidate.");
+                    }
+                } catch (error) {
+                    console.error("Assignment failed:", error);
+                }
+            } else {
+                alert("Please select a candidate.");
+            }
+        };
+    </script>
+
+    <script>
+        // Populate the Delete Confirmation Modal with data before it's shown
+        const modal = document.getElementById('deleteConfirmationModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const organizationId = button.getAttribute('data-organization-id');
+            const organizationName = button.getAttribute('data-organization-name');
+
+            // Update modal content
+            const organizationNameSpan = modal.querySelector('#electionName');
+            const deleteForm = modal.querySelector('#deleteElectionForm');
+            organizationNameSpan.textContent = organizationName;
+            deleteForm.action = '/OrganizationsData/DeleteOrganization/' + organizationId;
+        });
+    </script>
+
+    <script>
+        // Show Edit Partylist modal and populate it with organization data
+        async function openEditOrganizationModal(orgId) {
+            try {
+                const response = await fetch(`/OrganizationsData/GetOrganizationWithPositions/${orgId}`);
+                if (!response.ok) throw new Error("Failed to fetch organization data.");
+
+                const data = await response.json();
+
+                // Populate modal form fields
+                document.getElementById("editPartylistId").value = data.id;
+                document.getElementById("editPartylistName").value = data.name;
+                document.getElementById("editElectionType").value = data.electionType;
+
+                // Render position list
+                const positionsList = document.getElementById("editPositionsList");
+                positionsList.innerHTML = "";
+                data.positions.forEach(pos => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item";
+                    li.textContent = pos.title ?? pos;
+                    positionsList.appendChild(li);
+                });
+
+                // Display the modal
+                const modal = new bootstrap.Modal(document.getElementById("editPartylistModal"));
+                modal.show();
+
+            } catch (error) {
+                console.error(error);
+                alert("An error occurred while loading the organization details.");
+            }
+        }
+    </script>
+
+    <script>
+        // Handle partylist creation form submission
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("partylistForm");
+
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault(); // Prevent default form submit
+
+                // Collect form input data
+                const name = form.querySelector('input[name="Name"]').value;
+                const electionType = form.querySelector('select[name="ElectionType"]').value;
+                const positions = [];
+
+                if (electionType === "Custom") {
+                    // Collect all custom positions
+                    const customInputs = document.querySelectorAll('#customPositionsList input[name="CustomPosition"]');
+                    customInputs.forEach(input => {
+                        if (input.value.trim() !== "") {
+                            positions.push(input.value.trim());
+                        }
+                    });
+                }
+
+                // Create request payload
+                const payload = {
+                    name: name,
+                    electionType: electionType,
+                    positions: positions
+                };
+
+                try {
+                    const response = await fetch('/OrganizationsData/CreateWithPositions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        alert("Partylist created successfully!");
+                        form.reset();
+                        document.getElementById("positionsList").innerHTML = "";
+                        document.getElementById("customPositionsList").innerHTML = "";
+                        document.getElementById("predefinedPositions").classList.add("d-none");
+                        document.getElementById("customPositionsContainer").classList.add("d-none");
+
+                        const modal = bootstrap.Modal.getInstance(document.getElementById("addPartylistModal"));
+                        modal.hide();
+
+                        // Optionally reload the page to reflect changes
+                        window.location.reload();
+                    } else {
+                        const error = await response.text();
+                        alert("Failed to create partylist: " + error);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("An error occurred. Please try again.");
+                }
+            });
+        });
+
+        // Add additional custom position input dynamically
+        function addCustomPosition() {
+            const container = document.getElementById("customPositionsList");
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "form-control mb-2";
+            input.name = "CustomPosition";
+            input.placeholder = "Enter Position Title";
+            container.appendChild(input);
+        }
+    </script>
+
+}
+

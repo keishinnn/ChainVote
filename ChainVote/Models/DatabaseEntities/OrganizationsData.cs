@@ -8,23 +8,21 @@ namespace ChainVote.Models.DatabaseEntities
         [Key]
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Organization name is required.")]
+        [Required]
         [MaxLength(100)]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "Organization email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [Required]
+        [EmailAddress]
         [MaxLength(100)]
         public string Email { get; set; }
 
-        // Foreign key to EventsData
-        [Required]
-        public int EventId { get; set; }
+        public int? EventId { get; set; }
 
         [ForeignKey("EventId")]
-        public EventsData Event { get; set; }
+        public EventsData? Event { get; set; }
 
-        // Navigation property
-        public ICollection<CandidatesData> Candidates { get; set; }
+        public ICollection<CandidatesData> Candidates { get; set; } = new List<CandidatesData>();
+        public ICollection<OrganizationPosition> Positions { get; set; } = new List<OrganizationPosition>();
     }
 }

@@ -12,19 +12,25 @@ namespace ChainVote.Data
         {
         }
 
-        // DbSets for application entities
+        // DbSets for your entities
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
         public DbSet<AdminAccount> AdminAccount { get; set; }
         public DbSet<CandidatesData> CandidatesData { get; set; }
         public DbSet<EventsData> EventsData { get; set; }
         public DbSet<OrganizationsData> OrganizationsData { get; set; }
+        public DbSet<OrganizationPosition> OrganizationPosition { get; set; }
+        public DbSet<Votes> Votes { get; set; }
 
-        // Configuring relationships and delete behaviors
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Indexing relationships for performance optimizations
+            // Convert enum to string (Event status)
+            modelBuilder.Entity<EventsData>()
+                .Property(e => e.Status)
+                .HasConversion<string>();
+
+            // Indexes
             modelBuilder.Entity<Votes>()
                 .HasIndex(v => v.CandidateId)
                 .HasDatabaseName("IX_Votes_CandidateId");
@@ -33,40 +39,48 @@ namespace ChainVote.Data
                 .HasIndex(v => v.EventId)
                 .HasDatabaseName("IX_Votes_EventId");
 
-            modelBuilder.Entity<PositionsData>()
-                .HasIndex(p => p.EventId)
-                .HasDatabaseName("IX_Positions_EventId");
+            // Relationships
 
-            // Configuring Enum conversion for Event status (as string)
-            modelBuilder.Entity<EventsData>()
-                .Property(e => e.Status)
-                .HasConversion<string>();
-
+            // Organization → Event
             modelBuilder.Entity<OrganizationsData>()
-                .HasOne(o => o.Event)   // Each Organization has one Event
-                .WithMany(e => e.Organizations)  // Each Event can have many Organizations
+                .HasOne(o => o.Event)
+                .WithMany(e => e.Organizations)
                 .HasForeignKey(o => o.EventId)
-                .OnDelete(DeleteBehavior.Restrict);  // Prevent deletion of Event if it has related Organizations
+                .OnDelete(DeleteBehavior.Restrict);
 
+            // Organization → Candidates
             modelBuilder.Entity<CandidatesData>()
-                .HasOne(c => c.Organization)  // Each Candidate belongs to one Organization
-                .WithMany(o => o.Candidates)  // Each Organization can have many Candidates
+                .HasOne(c => c.Organization)
+                .WithMany(o => o.Candidates)
                 .HasForeignKey(c => c.OrganizationId)
-                .OnDelete(DeleteBehavior.Restrict);  // Prevent deletion of Organization if it has related Candidates
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // Cascade delete for Candidates when ApplicationUser is deleted
+            // Organization → Positions
+            modelBuilder.Entity<OrganizationPosition>()
+                .HasOne(p => p.Organization)
+                .WithMany(o => o.Positions)
+                .HasForeignKey(p => p.OrganizationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Position → Candidate (optional)
+            modelBuilder.Entity<OrganizationPosition>()
+                .HasOne(p => p.Candidate)
+                .WithMany(c => c.Positions)
+                .HasForeignKey(p => p.CandidateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Candidate → User
             modelBuilder.Entity<CandidatesData>()
                 .HasOne(c => c.ApplicationUser)
-                .WithMany()  // ApplicationUser has many Candidates, but we don't need to specify navigation on ApplicationUser side
+                .WithMany()
                 .HasForeignKey(c => c.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Cascade);  // Deletes Candidate when User is deleted
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Prevent deletion of User if there are associated Candidates
+            // Prevent deletion of User if any Candidate still references it
             modelBuilder.Entity<ApplicationUser>()
-                .HasMany(u => u.Candidates)  // A User can have many Candidates
+                .HasMany(u => u.Candidates)
                 .WithOne(c => c.ApplicationUser)
-                .OnDelete(DeleteBehavior.Restrict);  // Prevent deletion of User if any Candidate exists
-
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -4,6 +4,7 @@ using ChainVote.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChainVote.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250509123948_AddDtoAndUpdateRelationships")]
+    partial class AddDtoAndUpdateRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,7 +144,7 @@ namespace ChainVote.Migrations
                     b.Property<int?>("CandidateId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EventsDataId")
+                    b.Property<int>("EventId")
                         .HasColumnType("int");
 
                     b.Property<int>("OrganizationId")
@@ -156,7 +159,8 @@ namespace ChainVote.Migrations
 
                     b.HasIndex("CandidateId");
 
-                    b.HasIndex("EventsDataId");
+                    b.HasIndex("EventId")
+                        .HasDatabaseName("IX_OrganizationPosition_EventId");
 
                     b.HasIndex("OrganizationId");
 
@@ -176,7 +180,7 @@ namespace ChainVote.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("EventId")
+                    b.Property<int>("EventId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -184,9 +188,14 @@ namespace ChainVote.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("OrganizationsDataId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
+
+                    b.HasIndex("OrganizationsDataId");
 
                     b.ToTable("OrganizationsData");
                 });
@@ -475,9 +484,11 @@ namespace ChainVote.Migrations
                         .HasForeignKey("CandidateId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", null)
+                    b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", "Event")
                         .WithMany("Positions")
-                        .HasForeignKey("EventsDataId");
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("ChainVote.Models.DatabaseEntities.OrganizationsData", "Organization")
                         .WithMany("Positions")
@@ -487,6 +498,8 @@ namespace ChainVote.Migrations
 
                     b.Navigation("Candidate");
 
+                    b.Navigation("Event");
+
                     b.Navigation("Organization");
                 });
 
@@ -495,7 +508,12 @@ namespace ChainVote.Migrations
                     b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", "Event")
                         .WithMany("Organizations")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ChainVote.Models.DatabaseEntities.OrganizationsData", null)
+                        .WithMany("Organizations")
+                        .HasForeignKey("OrganizationsDataId");
 
                     b.Navigation("Event");
                 });
@@ -585,6 +603,8 @@ namespace ChainVote.Migrations
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.OrganizationsData", b =>
                 {
                     b.Navigation("Candidates");
+
+                    b.Navigation("Organizations");
 
                     b.Navigation("Positions");
                 });

@@ -21,6 +21,7 @@ namespace ChainVote.Models.DatabaseEntities
 
         [ForeignKey("OrganizationId")]
         public OrganizationsData Organization { get; set; }
+        public ICollection<OrganizationPosition> Positions { get; set; }
 
     }
 
