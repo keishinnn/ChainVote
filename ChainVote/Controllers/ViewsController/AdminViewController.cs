@@ -51,6 +51,11 @@ namespace ChainVote.Controllers.ViewsController
             return View();
         }
 
+        public IActionResult Voters()
+        {
+            return View();
+        }
+
         // 7. Logout
         public IActionResult Logout()
         {

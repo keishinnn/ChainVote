@@ -2,12 +2,6 @@
 
 namespace ChainVote.Models.DatabaseEntities
 {
-    public enum ElectionType
-    {
-        ClassOfficer,
-        CampusGovernment
-    }
-
     public enum ElectionStatus
     {
         Awaiting,
@@ -41,7 +35,6 @@ namespace ChainVote.Models.DatabaseEntities
         public string? Description { get; set; }
 
         public ElectionStatus Status { get; set; }
-        public ElectionType ElectionType { get; set; }
 
         [MaxLength(50)]
         public string? AllowedYearLevels { get; set; }

@@ -230,14 +230,14 @@
             <input type="hidden" asp-for="NewEvent.Status" value="Awaiting" />
             <input type="hidden" asp-for="NewEvent.Organizations" value="DefaultOrganization" />
 
-            <!-- Election Type -->
+@*             <!-- Election Type -->
             <div class="form-group mb-3">
                 <label asp-for="SelectedElectionType" class="form-label">Election Type</label>
                 <select asp-for="SelectedElectionType" asp-items="Model.ElectionTypes" class="form-control">
                     <option value="">-- Select Election Type --</option>
                 </select>
                 <span asp-validation-for="SelectedElectionType" class="text-danger small"></span>
-            </div>
+            </div> *@
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmCreateElectionModal">
                 Create Election
             </button>

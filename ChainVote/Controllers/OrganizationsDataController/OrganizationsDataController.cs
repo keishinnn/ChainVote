@@ -44,53 +44,76 @@ namespace ChainVote.Controllers.OrganizationsController
         }
 
 
-        // POST: Create organization with positions
-        [HttpPost]
-        public async Task<IActionResult> CreateWithPositions([FromBody] OrganizationWithPositionsDto dto)
-        {
-            if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.ElectionType))
-                return BadRequest("Missing fields");
-
-            var newOrg = new OrganizationsData
+            // POST: Create organization with positions
+            [HttpPost]
+            public async Task<IActionResult> CreateWithPositions([FromBody] OrganizationWithPositionsDto dto)
             {
-                Name = dto.Name,
-                Email = $"{dto.Name.ToLower().Replace(" ", "")}@fakeemail.com", // Placeholder
-                EventId = dto.EventId // Replace with dynamic value as needed
-            };
+                if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.ElectionType))
+                    return BadRequest("Missing fields");
 
-            _context.OrganizationsData.Add(newOrg);
-            await _context.SaveChangesAsync();
-
-            var positions = new List<OrganizationPosition>();
-
-            if (dto.ElectionType == "CSG")
-            {
-                var predefined = new[] {
-                    "President", "Vice President", "Senator",
-                    "Communication Secretary", "Information Secretary", "Treasurer", "Auditor"
+                var newOrg = new OrganizationsData
+                {
+                    Name = dto.Name,
+                    Email = $"{dto.Name.ToLower().Replace(" ", "")}@fakeemail.com",
+                    EventId = dto.EventId
                 };
-                positions.AddRange(predefined.Select(p => new OrganizationPosition { Title = p, OrganizationId = newOrg.Id }));
-            }
-            else if (dto.ElectionType == "USG")
-            {
-                var predefined = new[] {
-                    "President", "Vice President", "Secretary",
-                    "Chairperson for Student Programs and Services",
-                    "Chairperson for Student Welfare", "Chairperson for Student Development"
+
+                _context.OrganizationsData.Add(newOrg);
+                await _context.SaveChangesAsync();
+
+                var positions = new List<OrganizationPosition>();
+
+                // CSG or USG predefined positions
+                string[] predefined = dto.ElectionType switch
+                {
+                    "CSG" => new[] {
+                "President", "Vice President", "Senator",
+                "Communication Secretary", "Information Secretary", "Treasurer", "Auditor"
+            },
+                    "USG" => new[] {
+                "President", "Vice President", "Secretary",
+                "Chairperson for Student Programs and Services",
+                "Chairperson for Student Welfare", "Chairperson for Student Development"
+            },
+                    _ => Array.Empty<string>()
                 };
-                positions.AddRange(predefined.Select(p => new OrganizationPosition { Title = p, OrganizationId = newOrg.Id }));
+
+                foreach (var predefinedTitle in predefined)
+                {
+                    var matched = dto.PositionsWithCandidates?.FirstOrDefault(p => p.PositionName == predefinedTitle);
+                    var position = new OrganizationPosition
+                    {
+                        Title = predefinedTitle,
+                        OrganizationId = newOrg.Id,
+                        CandidateId = matched?.AssignedCandidate?.Id
+                    };
+                    positions.Add(position);
+                }
+
+                // Additional custom positions
+                var additional = dto.PositionsWithCandidates?
+                    .Where(p => !predefined.Contains(p.PositionName))
+                    .ToList();
+
+                if (additional != null)
+                {
+                    foreach (var pos in additional)
+                    {
+                        positions.Add(new OrganizationPosition
+                        {
+                            Title = pos.PositionName,
+                            OrganizationId = newOrg.Id,
+                            CandidateId = pos.AssignedCandidate?.Id
+                        });
+                    }
+                }
+
+                _context.OrganizationPosition.AddRange(positions);
+                await _context.SaveChangesAsync();
+
+                return Ok();
             }
 
-            if (dto.Positions != null && dto.Positions.Any())
-            {
-                positions.AddRange(dto.Positions.Select(pos => new OrganizationPosition { Title = pos, OrganizationId = newOrg.Id }));
-            }
-
-            _context.OrganizationPosition.AddRange(positions);
-            await _context.SaveChangesAsync();
-
-            return Ok();
-        }
 
         // GET: Details of one organization
         public async Task<IActionResult> Details(int id)
@@ -156,24 +179,39 @@ namespace ChainVote.Controllers.OrganizationsController
             {
                 id = org.Id,
                 name = org.Name,
-                electionType = org.Event != null ? org.Event.ElectionType.ToString() : "Unknown", // ✅ Safe access
                 positions = org.Positions.Select(p => new { id = p.Id, title = p.Title })
             };
 
             return Ok(result);
         }
 
-        public JsonResult GetCandidates()
+        [HttpGet]
+        public IActionResult GetCandidates(int orgId)
         {
-            var candidates = _context.CandidatesData // or _context.ApplicationUsers if renamed
-                .Select(u => new {
-                    id = u.Id,
-                    name = u.ApplicationUser.FirstName + " " + u.ApplicationUser.LastName
+            // Fetch candidates not yet assigned to any organization (i.e., OrganizationId is null)
+            var availableCandidates = _context.CandidatesData
+                .Where(c => c.OrganizationId == null) // not yet linked to any org
+                .Select(c => new {
+                    id = c.Id,
+                    name = c.ApplicationUser.FirstName + " " + c.ApplicationUser.LastName
                 })
                 .ToList();
 
-            return Json(new { data = candidates });
+            return Json(new { data = availableCandidates });
         }
 
+        [HttpGet]
+        public IActionResult GetAvailableElectionEvents()
+        {
+            var events = _context.EventsData
+                .Where(e => e.Status == ElectionStatus.Awaiting)
+                .Select(e => new {
+                    id = e.Id,
+                    eventName = e.EventName
+                })
+                .ToList();
+
+            return Json(events);
+        }
     }
 }

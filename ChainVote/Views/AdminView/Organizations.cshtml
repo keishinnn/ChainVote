@@ -93,12 +93,20 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">Select Election Event</label>
+                        <select class="form-select" name="EventId" id="eventSelect" required>
+                            <option selected disabled value="">-- Select Election Event --</option>
+                            <!-- This will be filled dynamically -->
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Election Type</label>
-                        <select class="form-select" name="ElectionType" id="electionTypeSelect" required>
+                        <select class="form-select" id="electionTypeSelect" name="ElectionType" required>
                             <option selected disabled value="">-- Select Election Type --</option>
                             <option value="CSG">Campus Student Government (CSG)</option>
                             <option value="USG">University Student Government (USG)</option>
-                            <option value="Custom">Custom Organization</option>
+                            <option value="Class">Class Officer</option>
                         </select>
                     </div>
 
@@ -108,12 +116,7 @@
                         <ul class="list-group" id="positionsList"></ul>
                     </div>
 
-                    <!-- Custom Position -->
-                    <div id="customPositionsContainer" class="mb-3 d-none">
-                        <label class="form-label">Custom Positions</label>
-                        <div id="customPositionsList"></div>
-                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2" onclick="addCustomPosition()">+ Add Position</button>
-                    </div>
+
                 </div>
 
                 <div class="modal-footer">
@@ -129,6 +132,10 @@
 <div class="modal fade" id="assignCandidateModal" tabindex="-1" aria-labelledby="assignCandidateModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content shadow">
+
+            <!-- ✅ Hidden input here -->
+            <input type="hidden" id="orgIdHidden" value="@Model" />
+
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="assignCandidateModalLabel">Assign Candidate</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -150,6 +157,7 @@
         </div>
     </div>
 </div>
+
 
 
 <!-- Edit Partylist Modal -->
@@ -208,7 +216,7 @@
 @section Scripts {
 
     <script>
-        // Define the standard positions for CSG and USG election types
+        // Define the standard positions for CSG, USG, and Class Officer election types
         const csgPositions = [
             "President", "Vice President", "Senator",
             "Communication Secretary", "Information Secretary", "Treasurer", "Auditor"
@@ -220,21 +228,38 @@
             "Chairperson for Student Welfare", "Chairperson for Student Development"
         ];
 
+        const classOfficerPositions = [
+            "President", "Vice President", "Secretary", "Treasurer", "Auditor", "P.I.O", "Business Manager"
+        ];
+
+        const assignedCandidatesMap = {};
+        const organizationId = document.getElementById("orgIdHidden").value;
+
         // Handle change in election type dropdown
         document.getElementById("electionTypeSelect").addEventListener("change", function () {
             const value = this.value;
             const predefinedContainer = document.getElementById("predefinedPositions"); // Container for predefined positions
-            const customContainer = document.getElementById("customPositionsContainer"); // Container for custom positions
             const list = document.getElementById("positionsList"); // List element to render predefined positions
 
             list.innerHTML = ""; // Clear existing list
             predefinedContainer.classList.add("d-none");
-            customContainer.classList.add("d-none");
 
-            if (value === "CSG" || value === "USG") {
+            if (value === "CSG" || value === "USG" || value === "Class Officer") {
                 // Show predefined positions
                 predefinedContainer.classList.remove("d-none");
-                const positions = value === "CSG" ? csgPositions : usgPositions;
+                let positions = [];
+
+                switch (value) {
+                    case "CSG":
+                        positions = csgPositions;
+                        break;
+                    case "USG":
+                        positions = usgPositions;
+                        break;
+                    case "Class Officer":
+                        positions = classOfficerPositions;
+                        break;
+                }
 
                 // Dynamically create list items with assign buttons
                 positions.forEach(pos => {
@@ -246,91 +271,97 @@
                     span.textContent = pos;
 
                     const candidateInfo = document.createElement("small");
-                    candidateInfo.className = "text-success ms-2 assigned-candidate"; // for showing candidate name
+                    candidateInfo.className = "text-success ms-2 assigned-candidate";
 
                     const button = document.createElement("button");
                     button.type = "button";
                     button.className = "btn btn-sm btn-link assign-btn";
                     button.textContent = "Assign";
-                    button.onclick = () => openAssignCandidateModal(pos, li);
+                    button.onclick = () => openAssignCandidateModal(pos, li, organizationId);
 
                     span.appendChild(candidateInfo);
                     li.appendChild(span);
                     li.appendChild(button);
                     list.appendChild(li);
                 });
-               
-            } else if (value === "Custom") {
-                // Show custom positions input section
-                customContainer.classList.remove("d-none");
             }
         });
 
-        // Show Assign Candidate modal and load candidates for the selected position
-        async function openAssignCandidateModal(position, listItem) {
-            const modal = new bootstrap.Modal(document.getElementById("assignCandidateModal"));
+        // Show Assign Candidate modal and load candidates
+        async function openAssignCandidateModal(position, listItem, organizationId) {
+            const modalElement = document.getElementById("assignCandidateModal");
+            const modal = new bootstrap.Modal(modalElement);
             modal.show();
 
-            const candidates = await fetchCandidatesForPosition(position);
-
+            const candidates = await fetchCandidatesForPosition(position, organizationId);
             const candidateSelect = document.getElementById("candidateSelect");
+            const assignButton = document.getElementById("assignCandidateBtn");
+
             candidateSelect.innerHTML = "";
             candidates.forEach(candidate => {
                 const option = document.createElement("option");
                 option.value = candidate.id;
                 option.textContent = candidate.name;
+
+                if (assignedCandidatesMap[candidate.id]) {
+                    option.disabled = true;
+                    option.textContent += ` (Already assigned to ${assignedCandidatesMap[candidate.id]})`;
+                }
+
                 candidateSelect.appendChild(option);
             });
 
-            // Assign Button logic
-            const assignButton = document.getElementById("assignCandidateBtn");
-            assignButton.onclick = function () {
+            // Remove previous events
+            const oldAssignButton = document.getElementById("assignCandidateBtn");
+            const newAssignButton = oldAssignButton.cloneNode(true);
+            oldAssignButton.parentNode.replaceChild(newAssignButton, oldAssignButton);
+
+            newAssignButton.onclick = function () {
                 const selectedCandidateId = candidateSelect.value;
                 const selectedCandidateName = candidateSelect.options[candidateSelect.selectedIndex].text;
 
-                if (selectedCandidateId) {
-                    // Simulate successful link (replace with real POST logic)
-                    alert(`Assigned ${position} to ${selectedCandidateName}`);
-                    modal.hide();
-
-                    // Update the button and candidate display
-                    const assignBtn = listItem.querySelector(".assign-btn");
-                    assignBtn.textContent = "Unassign";
-                    assignBtn.classList.remove("btn-link");
-                    assignBtn.classList.add("btn-danger");
-                    assignBtn.onclick = () => unassignCandidate(position, listItem); // toggle
-
-                    // Show candidate name beside position
-                    const candidateSpan = listItem.querySelector(".assigned-candidate");
-                    candidateSpan.textContent = ` - ${selectedCandidateName}`;
-                } else {
+                if (!selectedCandidateId) {
                     alert("Please select a candidate.");
+                    return;
                 }
+
+                if (assignedCandidatesMap[selectedCandidateId]) {
+                    alert("This candidate is already assigned to another position.");
+                    return;
+                }
+
+                assignedCandidatesMap[selectedCandidateId] = position;
+                modal.hide();
+
+                const assignBtn = listItem.querySelector(".assign-btn");
+                assignBtn.textContent = "Unassign";
+                assignBtn.classList.remove("btn-link");
+                assignBtn.classList.add("btn-danger");
+                assignBtn.onclick = () => unassignCandidate(position, listItem, selectedCandidateId);
+
+                const candidateSpan = listItem.querySelector(".assigned-candidate");
+                candidateSpan.textContent = ` - ${selectedCandidateName}`;
             };
         }
 
-         function unassignCandidate(position, listItem) {
-            // Simulate unassignment (replace with POST if needed)
-            alert(`Unassigned candidate from ${position}`);
+        function unassignCandidate(position, listItem, candidateId) {
+            delete assignedCandidatesMap[candidateId];
 
-            // Reset button and candidate display
             const assignBtn = listItem.querySelector(".assign-btn");
             assignBtn.textContent = "Assign";
             assignBtn.classList.remove("btn-danger");
             assignBtn.classList.add("btn-link");
-            assignBtn.onclick = () => openAssignCandidateModal(position, listItem);
+            assignBtn.onclick = () => openAssignCandidateModal(position, listItem, organizationId);
 
             const candidateSpan = listItem.querySelector(".assigned-candidate");
             candidateSpan.textContent = "";
         }
 
-
-        // Fetch available candidates for assignment
-        async function fetchCandidatesForPosition(position) {
+        async function fetchCandidatesForPosition(position, orgId) {
             try {
-                const response = await fetch('@Url.Action("GetCandidates", "OrganizationsData")');
+                const response = await fetch(`@Url.Action("GetCandidates", "OrganizationsData")?orgId=${orgId}`);
                 const result = await response.json();
-                return result.data; // Returns array of candidates
+                return result.data;
             } catch (error) {
                 console.error("Error fetching candidates:", error);
                 return [];
@@ -338,39 +369,7 @@
         }
     </script>
 
-    <script>
-        // Handle candidate linking to a position via POST request
-        assignCandidateBtn.onclick = async function () {
-            const selectedCandidateId = candidateSelect.value;
-            if (selectedCandidateId) {
-                try {
-                    const response = await fetch('/OrganizationPositions/LinkCandidate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                        },
-                        body: JSON.stringify({
-                            positionId: currentPositionId,
-                            candidateId: selectedCandidateId
-                        })
-                    });
 
-                    if (response.ok) {
-                        alert("Successfully assigned candidate!");
-                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById("assignCandidateModal"));
-                        modalInstance.hide();
-                    } else {
-                        alert("Failed to assign candidate.");
-                    }
-                } catch (error) {
-                    console.error("Assignment failed:", error);
-                }
-            } else {
-                alert("Please select a candidate.");
-            }
-        };
-    </script>
 
     <script>
         // Populate the Delete Confirmation Modal with data before it's shown
@@ -424,33 +423,36 @@
     </script>
 
     <script>
-        // Handle partylist creation form submission
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById("partylistForm");
 
             form.addEventListener("submit", async function (e) {
                 e.preventDefault(); // Prevent default form submit
 
-                // Collect form input data
                 const name = form.querySelector('input[name="Name"]').value;
+                const eventId = form.querySelector('select[name="EventId"]').value;
                 const electionType = form.querySelector('select[name="ElectionType"]').value;
-                const positions = [];
 
-                if (electionType === "Custom") {
-                    // Collect all custom positions
-                    const customInputs = document.querySelectorAll('#customPositionsList input[name="CustomPosition"]');
-                    customInputs.forEach(input => {
-                        if (input.value.trim() !== "") {
-                            positions.push(input.value.trim());
+                // ✅ Collect assigned candidates for predefined positions
+                const positionsWithCandidates = [];
+                Object.keys(assignedCandidatesMap).forEach(candidateId => {
+                    const position = assignedCandidatesMap[candidateId];
+                    const name = document.querySelector(`#positionsList li[data-position="${position}"] .assigned-candidate`).textContent.replace(" - ", "").trim();
+
+                    positionsWithCandidates.push({
+                        positionName: position,
+                        assignedCandidate: {
+                            id: parseInt(candidateId),
+                            name: name
                         }
                     });
-                }
+                });
 
-                // Create request payload
                 const payload = {
                     name: name,
+                    eventId: parseInt(eventId),
                     electionType: electionType,
-                    positions: positions
+                    positionsWithCandidates: positionsWithCandidates
                 };
 
                 try {
@@ -467,14 +469,10 @@
                         alert("Partylist created successfully!");
                         form.reset();
                         document.getElementById("positionsList").innerHTML = "";
-                        document.getElementById("customPositionsList").innerHTML = "";
                         document.getElementById("predefinedPositions").classList.add("d-none");
-                        document.getElementById("customPositionsContainer").classList.add("d-none");
 
                         const modal = bootstrap.Modal.getInstance(document.getElementById("addPartylistModal"));
                         modal.hide();
-
-                        // Optionally reload the page to reflect changes
                         window.location.reload();
                     } else {
                         const error = await response.text();
@@ -486,16 +484,32 @@
                 }
             });
         });
+    </script>
 
-        // Add additional custom position input dynamically
-        function addCustomPosition() {
-            const container = document.getElementById("customPositionsList");
-            const input = document.createElement("input");
-            input.type = "text";
-            input.className = "form-control mb-2";
-            input.name = "CustomPosition";
-            input.placeholder = "Enter Position Title";
-            container.appendChild(input);
+
+  
+    <script>
+        // script for fetching awaiting election event and to populate the dropdown for creating an organization
+        $(document).ready(function () {
+            loadElectionEvents();
+        });
+
+        function loadElectionEvents() {
+            $.ajax({
+                url: '/OrganizationsData/GetAvailableElectionEvents', // Update to match your route
+                type: 'GET',
+                success: function (data) {
+                    const select = $('#eventSelect');
+                    select.empty().append('<option selected disabled value="">-- Select Election Event --</option>');
+
+                    data.forEach(event => {
+                        select.append(`<option value="${event.id}">${event.eventName}</option>`);
+                    });
+                },
+                error: function () {
+                    alert('Failed to load election events.');
+                }
+            });
         }
     </script>
 

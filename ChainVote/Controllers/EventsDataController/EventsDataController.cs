@@ -66,15 +66,6 @@ namespace ChainVote.Controllers
                     StartDate = DateTime.Today,
                     EndDate = DateTime.Today.AddDays(1)
                 },
-
-                ElectionTypes = Enum.GetValues(typeof(ElectionType))
-                    .Cast<ElectionType>()
-                    .Select(e => new SelectListItem
-                    {
-                        Value = e.ToString(),
-                        Text = e == ElectionType.CampusGovernment ? "CSG/USG" : "Class Officer"
-                    })
-                    .ToList()
             };
 
             return View("~/Views/AdminView/Elections.cshtml", model);
@@ -88,7 +79,6 @@ namespace ChainVote.Controllers
         public async Task<IActionResult> AddElection(ElectionOverviewViewModel model, List<string> Courses, List<string> YearLevels, List<string> Sections)
         {
             _logger.LogInformation("AddElection called at {Time}", DateTime.Now);
-            _logger.LogInformation("SelectedElectionType received: {Type}", model.SelectedElectionType);
 
             if (model.NewEvent != null)
             {
@@ -106,15 +96,6 @@ namespace ChainVote.Controllers
                 _logger.LogWarning("ModelState is invalid: {Errors}", string.Join(", ",
                     ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage))));
 
-                model.ElectionTypes = Enum.GetValues(typeof(ElectionType))
-                    .Cast<ElectionType>()
-                    .Select(e => new SelectListItem
-                    {
-                        Value = e.ToString(),
-                        Text = e == ElectionType.CampusGovernment ? "CSG/USG" : "Class Officer"
-                    })
-                    .ToList();
-
                 return View("~/Views/AdminView/Elections.cshtml", model);
             }
 
@@ -129,16 +110,7 @@ namespace ChainVote.Controllers
                     return RedirectToAction("Elections");
                 }
 
-                if (Enum.TryParse<ElectionType>(model.SelectedElectionType, out var parsedElectionType)
-                    && Enum.IsDefined(typeof(ElectionType), parsedElectionType))
-                {
-                    model.NewEvent.ElectionType = parsedElectionType;
-                }
-                else
-                {
-                    TempData["ErrorMessage"] = $"Invalid election type selected: {model.SelectedElectionType}";
-                    return RedirectToAction("Elections");
-                }
+                // Since election type is not needed, you can skip this section
 
                 _context.EventsData.Add(model.NewEvent);
                 await _context.SaveChangesAsync();
@@ -265,21 +237,6 @@ namespace ChainVote.Controllers
                 selectedSections
             });
         }
-
-
-
-        private List<SelectListItem> GetElectionTypes()
-        {
-            return Enum.GetValues(typeof(ElectionType))
-                .Cast<ElectionType>()
-                .Select(e => new SelectListItem
-                {
-                    Value = e.ToString(),
-                    Text = e == ElectionType.CampusGovernment ? "CSG/USG" : "Class Officer"
-                })
-                .ToList();
-        }
-
 
     }
 }

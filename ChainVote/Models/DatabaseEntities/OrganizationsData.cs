@@ -3,6 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChainVote.Models.DatabaseEntities
 {
+
+    public enum ElectionType
+    {
+        ClassOfficer,
+        CampusGovernment,
+        UniversityGovernment
+    }
     public class OrganizationsData
     {
         [Key]
@@ -16,6 +23,8 @@ namespace ChainVote.Models.DatabaseEntities
         [EmailAddress]
         [MaxLength(100)]
         public string Email { get; set; }
+
+        public ElectionType ElectionType { get; set; }
 
         public int? EventId { get; set; }
 
