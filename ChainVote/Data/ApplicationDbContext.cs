@@ -8,9 +8,7 @@ namespace ChainVote.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         // DbSets for your entities
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
@@ -41,18 +39,11 @@ namespace ChainVote.Data
 
             // Relationships
 
-            // Organization → Event
+            // Event → Organizations
             modelBuilder.Entity<OrganizationsData>()
                 .HasOne(o => o.Event)
                 .WithMany(e => e.Organizations)
                 .HasForeignKey(o => o.EventId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Organization → Candidates
-            modelBuilder.Entity<CandidatesData>()
-                .HasOne(c => c.Organization)
-                .WithMany(o => o.Candidates)
-                .HasForeignKey(c => c.OrganizationId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Organization → Positions
@@ -60,27 +51,21 @@ namespace ChainVote.Data
                 .HasOne(p => p.Organization)
                 .WithMany(o => o.Positions)
                 .HasForeignKey(p => p.OrganizationId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict); // or .Cascade
 
-            // Position → Candidate (optional)
-            modelBuilder.Entity<OrganizationPosition>()
-                .HasOne(p => p.Candidate)
-                .WithMany(c => c.Positions)
-                .HasForeignKey(p => p.CandidateId)
+            // OrganizationPosition → CandidatesData
+            modelBuilder.Entity<CandidatesData>()
+                .HasOne(c => c.Position)
+                .WithMany(p => p.Candidates)
+                .HasForeignKey(c => c.PositionId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Candidate → User
-            modelBuilder.Entity<CandidatesData>()
-                .HasOne(c => c.ApplicationUser)
-                .WithMany()
-                .HasForeignKey(c => c.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Prevent deletion of User if any Candidate still references it
+            // Candidate → ApplicationUser (One-to-One)
             modelBuilder.Entity<ApplicationUser>()
-                .HasMany(u => u.Candidates)
+                .HasOne(a => a.Candidate)
                 .WithOne(c => c.ApplicationUser)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey<CandidatesData>(c => c.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Restrict); // prevent deletion if candidate exists
         }
     }
 }

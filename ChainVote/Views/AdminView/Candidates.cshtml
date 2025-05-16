@@ -52,19 +52,30 @@
 </div>
 
 <!-- Modal for Confirming Candidate Deployment -->
-<div class="modal fade" id="confirmDeployModal" tabindex="-1" aria-labelledby="confirmDeployModalLabel" aria-hidden="true">
+<div class="modal fade" id="deployModal" tabindex="-1" aria-labelledby="deployModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="confirmDeployModalLabel">Confirm Deployment</h5>
+                <h5 class="modal-title" id="deployModalLabel">Deploy Candidate</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to deploy this candidate?
+                <div class="mb-3">
+                    <label for="organizationDropdown" class="form-label">Organization</label>
+                    <select id="organizationDropdown" class="form-control">
+                        <option value="">Choose an Organization</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="positionDropdown" class="form-label">Position</label>
+                    <select id="positionDropdown" class="form-control">
+                        <option value="">Choose a Position</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="confirmDeployBtn">Deploy</button>
+                <button type="button" class="btn btn-success" id="deployBtn">Deploy</button>
             </div>
         </div>
     </div>
@@ -96,7 +107,8 @@
 
         function setCandidateToDeploy(studentId) {
             candidateToDeploy = studentId;
-            $('#confirmDeployModal').modal('show');
+            loadOrganizations();  // Load organizations when selecting candidate to deploy
+            $('#deployModal').modal('show');
         }
 
         function setCandidateToDelete(studentId) {
@@ -104,8 +116,102 @@
             $('#confirmDeleteModal').modal('show');
         }
 
-        $(document).ready(function () {
+        // Fetch Organizations for the first dropdown
+        function loadOrganizations() {
+            $.ajax({
+                url: '@Url.Action("GetOrganizations", "CandidatesData")',
+                method: 'GET',
+                success: function (data) {
+                    let organizationsDropdown = $('#organizationDropdown');
+                    organizationsDropdown.empty();  // Clear existing options
+                    organizationsDropdown.append('<option value="">Choose an Organization</option>');
+                    data.forEach(org => {
+                        organizationsDropdown.append(`<option value="${org.id}">${org.name}</option>`);
+                    });
+                    loadPositions(); // Load positions when organizations are loaded
+                },
+                error: function (xhr) {
+                    alert(xhr.responseText || "Failed to fetch organizations.");
+                }
+            });
+        }
 
+        // Fetch Positions for the second dropdown based on selected organization
+        function loadPositions() {
+            const organizationId = $('#organizationDropdown').val();
+            console.log('Organization ID:', organizationId);  // Check if this is logging
+
+            if (!organizationId) return; // Do not fetch if no organization is selected
+
+            $.ajax({
+                url: '@Url.Action("GetAvailablePositions", "CandidatesData")', // Make sure the URL is correct
+                method: 'GET',
+                data: { organizationId: organizationId },
+                success: function (data) {
+                    let positionsDropdown = $('#positionDropdown');
+                    positionsDropdown.empty();  // Clear existing options
+                    positionsDropdown.append('<option value="">Choose a Position</option>');
+                    data.forEach(position => {
+                        positionsDropdown.append(`<option value="${position.id}">${position.title}</option>`);
+                    });
+                },
+                error: function (xhr) {
+                    alert(xhr.responseText || "Failed to fetch positions.");
+                }
+            });
+        }
+
+        // Deploy Candidate Action
+        $('#deployBtn').on('click', function () {
+            const organizationId = $('#organizationDropdown').val();
+            const positionId = $('#positionDropdown').val();
+
+            if (!organizationId || !positionId) {
+                alert("Please select both organization and position.");
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("DeployCandidate", "CandidatesData")',
+                method: 'POST',
+                data: {
+                    studentId: candidateToDeploy,
+                    organizationId: organizationId,
+                    positionId: positionId
+                },
+                success: function () {
+                    $('#readyCandidatesTable').DataTable().ajax.reload();
+                    $('#deployedCandidatesTable').DataTable().ajax.reload();
+                    $('#deployModal').modal('hide');
+                },
+                error: function (xhr) {
+                    alert(xhr.responseText || "Failed to deploy candidate.");
+                }
+            });
+        });
+
+                // Confirm Delete Button Click Handler
+        $('#confirmDeleteBtn').on('click', function () {
+            if (!candidateToDelete) return;
+
+            $.ajax({
+                url: '@Url.Action("DeleteCandidate", "CandidatesData")',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(candidateToDelete),
+                success: function () {
+                    $('#deployedCandidatesTable').DataTable().ajax.reload();
+                    $('#confirmDeleteModal').modal('hide');
+                    candidateToDelete = ''; // Reset the candidate
+                },
+                error: function (xhr) {
+                    alert(xhr.responseText || "Failed to delete candidate.");
+                }
+            });
+        });
+
+
+        $(document).ready(function () {
             // Ready for Deployment Table
             $('#readyCandidatesTable').DataTable({
                 processing: true,
@@ -165,39 +271,10 @@
                     search: ""
                 }
             });
+        });
 
-            // Deploy Candidate Action
-            $('#confirmDeployBtn').on('click', function () {
-                $.ajax({
-                    url: '@Url.Action("DeployCandidate", "CandidatesData")',
-                    method: 'POST',
-                    data: { studentId: candidateToDeploy },
-                    success: function () {
-                        $('#readyCandidatesTable').DataTable().ajax.reload();
-                        $('#deployedCandidatesTable').DataTable().ajax.reload();
-                        $('#confirmDeployModal').modal('hide');
-                    },
-                    error: function (xhr) {
-                        alert(xhr.responseText || "Failed to deploy candidate.");
-                    }
-                });
-            });
-
-            // Delete Candidate Action
-            $('#confirmDeleteBtn').on('click', function () {
-                $.ajax({
-                    url: '@Url.Action("DeleteCandidate", "CandidatesData")',
-                    method: 'POST',
-                    data: { studentId: candidateToDelete },
-                    success: function () {
-                        $('#deployedCandidatesTable').DataTable().ajax.reload();
-                        $('#confirmDeleteModal').modal('hide');
-                    },
-                    error: function (xhr) {
-                        alert(xhr.responseText || "Failed to remove candidate.");
-                    }
-                });
-            });
+        $(document).on('change', '#organizationDropdown', function () {
+            loadPositions();
         });
     </script>
 }

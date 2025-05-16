@@ -26,10 +26,10 @@ namespace ChainVote.Models.DatabaseEntities
 
         public ElectionType ElectionType { get; set; }
 
-        public int? EventId { get; set; }
+        public int EventId { get; set; }
 
         [ForeignKey("EventId")]
-        public EventsData? Event { get; set; }
+        public EventsData Event { get; set; }
 
         public ICollection<CandidatesData> Candidates { get; set; } = new List<CandidatesData>();
         public ICollection<OrganizationPosition> Positions { get; set; } = new List<OrganizationPosition>();

@@ -104,9 +104,9 @@
                         <label class="form-label">Election Type</label>
                         <select class="form-select" id="electionTypeSelect" name="ElectionType" required>
                             <option selected disabled value="">-- Select Election Type --</option>
-                            <option value="CSG">Campus Student Government (CSG)</option>
-                            <option value="USG">University Student Government (USG)</option>
-                            <option value="Class">Class Officer</option>
+                            <option value="CampusGovernment">Campus Student Government (CSG)</option>
+                            <option value="UniversityGovernment">University Student Government (USG)</option>
+                            <option value="ClassOfficer">Class Officer</option>
                         </select>
                     </div>
 
@@ -128,35 +128,6 @@
     </div>
 </div>
 
-<!-- Assign Candidate Modal -->
-<div class="modal fade" id="assignCandidateModal" tabindex="-1" aria-labelledby="assignCandidateModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content shadow">
-
-            <!-- ✅ Hidden input here -->
-            <input type="hidden" id="orgIdHidden" value="@Model" />
-
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="assignCandidateModalLabel">Assign Candidate</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Select Candidate</label>
-                    <select class="form-select" id="candidateSelect">
-                        <!-- Populated dynamically -->
-                    </select>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="assignCandidateBtn">Assign</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 
 
@@ -232,8 +203,6 @@
             "President", "Vice President", "Secretary", "Treasurer", "Auditor", "P.I.O", "Business Manager"
         ];
 
-        const assignedCandidatesMap = {};
-        const organizationId = document.getElementById("orgIdHidden").value;
 
         // Handle change in election type dropdown
         document.getElementById("electionTypeSelect").addEventListener("change", function () {
@@ -244,19 +213,19 @@
             list.innerHTML = ""; // Clear existing list
             predefinedContainer.classList.add("d-none");
 
-            if (value === "CSG" || value === "USG" || value === "Class Officer") {
+            if (value === "CampusGovernment" || value === "UniversityGovernment" || value === "ClassOfficer") {
                 // Show predefined positions
                 predefinedContainer.classList.remove("d-none");
                 let positions = [];
 
                 switch (value) {
-                    case "CSG":
+                    case "CampusGovernment":
                         positions = csgPositions;
                         break;
-                    case "USG":
+                    case "UniversityGovernment":
                         positions = usgPositions;
                         break;
-                    case "Class Officer":
+                    case "ClassOfficer":
                         positions = classOfficerPositions;
                         break;
                 }
@@ -286,87 +255,6 @@
                 });
             }
         });
-
-        // Show Assign Candidate modal and load candidates
-        async function openAssignCandidateModal(position, listItem, organizationId) {
-            const modalElement = document.getElementById("assignCandidateModal");
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-
-            const candidates = await fetchCandidatesForPosition(position, organizationId);
-            const candidateSelect = document.getElementById("candidateSelect");
-            const assignButton = document.getElementById("assignCandidateBtn");
-
-            candidateSelect.innerHTML = "";
-            candidates.forEach(candidate => {
-                const option = document.createElement("option");
-                option.value = candidate.id;
-                option.textContent = candidate.name;
-
-                if (assignedCandidatesMap[candidate.id]) {
-                    option.disabled = true;
-                    option.textContent += ` (Already assigned to ${assignedCandidatesMap[candidate.id]})`;
-                }
-
-                candidateSelect.appendChild(option);
-            });
-
-            // Remove previous events
-            const oldAssignButton = document.getElementById("assignCandidateBtn");
-            const newAssignButton = oldAssignButton.cloneNode(true);
-            oldAssignButton.parentNode.replaceChild(newAssignButton, oldAssignButton);
-
-            newAssignButton.onclick = function () {
-                const selectedCandidateId = candidateSelect.value;
-                const selectedCandidateName = candidateSelect.options[candidateSelect.selectedIndex].text;
-
-                if (!selectedCandidateId) {
-                    alert("Please select a candidate.");
-                    return;
-                }
-
-                if (assignedCandidatesMap[selectedCandidateId]) {
-                    alert("This candidate is already assigned to another position.");
-                    return;
-                }
-
-                assignedCandidatesMap[selectedCandidateId] = position;
-                modal.hide();
-
-                const assignBtn = listItem.querySelector(".assign-btn");
-                assignBtn.textContent = "Unassign";
-                assignBtn.classList.remove("btn-link");
-                assignBtn.classList.add("btn-danger");
-                assignBtn.onclick = () => unassignCandidate(position, listItem, selectedCandidateId);
-
-                const candidateSpan = listItem.querySelector(".assigned-candidate");
-                candidateSpan.textContent = ` - ${selectedCandidateName}`;
-            };
-        }
-
-        function unassignCandidate(position, listItem, candidateId) {
-            delete assignedCandidatesMap[candidateId];
-
-            const assignBtn = listItem.querySelector(".assign-btn");
-            assignBtn.textContent = "Assign";
-            assignBtn.classList.remove("btn-danger");
-            assignBtn.classList.add("btn-link");
-            assignBtn.onclick = () => openAssignCandidateModal(position, listItem, organizationId);
-
-            const candidateSpan = listItem.querySelector(".assigned-candidate");
-            candidateSpan.textContent = "";
-        }
-
-        async function fetchCandidatesForPosition(position, orgId) {
-            try {
-                const response = await fetch(`@Url.Action("GetCandidates", "OrganizationsData")?orgId=${orgId}`);
-                const result = await response.json();
-                return result.data;
-            } catch (error) {
-                console.error("Error fetching candidates:", error);
-                return [];
-            }
-        }
     </script>
 
 
@@ -423,36 +311,24 @@
     </script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+          document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById("partylistForm");
 
             form.addEventListener("submit", async function (e) {
-                e.preventDefault(); // Prevent default form submit
+                e.preventDefault();
 
                 const name = form.querySelector('input[name="Name"]').value;
                 const eventId = form.querySelector('select[name="EventId"]').value;
                 const electionType = form.querySelector('select[name="ElectionType"]').value;
 
-                // ✅ Collect assigned candidates for predefined positions
-                const positionsWithCandidates = [];
-                Object.keys(assignedCandidatesMap).forEach(candidateId => {
-                    const position = assignedCandidatesMap[candidateId];
-                    const name = document.querySelector(`#positionsList li[data-position="${position}"] .assigned-candidate`).textContent.replace(" - ", "").trim();
-
-                    positionsWithCandidates.push({
-                        positionName: position,
-                        assignedCandidate: {
-                            id: parseInt(candidateId),
-                            name: name
-                        }
-                    });
-                });
-
+                // ✅ Only collect predefined positions (no candidate linking)
+                const positionsListItems = document.querySelectorAll("#positionsList li");
+                const predefinedPositions = Array.from(positionsListItems).map(li => li.dataset.position);
                 const payload = {
                     name: name,
                     eventId: parseInt(eventId),
                     electionType: electionType,
-                    positionsWithCandidates: positionsWithCandidates
+                    positions: predefinedPositions // ✅ Only position names
                 };
 
                 try {

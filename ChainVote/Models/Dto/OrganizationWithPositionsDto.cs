@@ -1,5 +1,4 @@
 ﻿using ChainVote.Models.DatabaseEntities;
-using ChainVote.Models.Dtos;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ChainVote.Models.Dto
@@ -9,12 +8,10 @@ namespace ChainVote.Models.Dto
         public string Name { get; set; }
         public string ElectionType { get; set; }
         public List<string> Positions { get; set; }
-        public int? EventId { get; set; }
+        public int EventId { get; set; }
 
         [ForeignKey("EventId")]
-        public EventsData? Event { get; set; }
-
-        public List<PositionWithCandidateDto> PositionsWithCandidates { get; set; }
+        public EventsData Event { get; set; }
     }
 
 }

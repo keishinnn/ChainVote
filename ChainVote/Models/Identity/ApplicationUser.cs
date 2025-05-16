@@ -10,11 +10,12 @@ namespace ChainVote.Models.Identity
         public string YearLevel { get; set; }
         public string Section { get; set; }
 
-        // ➕ Add these new fields
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Course { get; set; }
         public bool HasVoted { get; set; }
-        public ICollection<CandidatesData> Candidates { get; set; }
+
+        // ✅ Change to one-to-one
+        public CandidatesData Candidate { get; set; }
     }
 }

@@ -43,23 +43,29 @@ namespace ChainVote.Controllers.CandidatesController
             return Json(new { data = candidates });
         }
 
-        // Method to deploy a candidate (already implemented)
         [HttpPost]
-        public async Task<IActionResult> DeployCandidate(string studentId)
+        public async Task<IActionResult> DeployCandidate(string studentId, int positionId)
         {
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.StudentId == studentId);
 
             if (user == null)
                 return NotFound();
 
-            // Optional: Check if already a candidate
+            // Check if already a candidate
             var exists = await _context.CandidatesData.AnyAsync(c => c.ApplicationUserId == user.Id);
             if (exists)
                 return BadRequest("User is already a candidate.");
 
+            // Check if position is already taken
+            var positionTaken = await _context.CandidatesData.AnyAsync(c => c.PositionId == positionId);
+            if (positionTaken)
+                return BadRequest("This position is already assigned to another candidate.");
+
+            // Create candidate
             var candidate = new CandidatesData
             {
-                ApplicationUserId = user.Id
+                ApplicationUserId = user.Id,
+                PositionId = positionId
             };
 
             _context.CandidatesData.Add(candidate);
@@ -68,25 +74,53 @@ namespace ChainVote.Controllers.CandidatesController
             return Ok();
         }
 
-        // Method to delete a deployed candidate
+
         [HttpPost]
-        public async Task<IActionResult> DeleteCandidate(string studentId)
+        public async Task<IActionResult> DeleteCandidate([FromBody] string studentId)
         {
+            if (string.IsNullOrEmpty(studentId))
+                return BadRequest("Invalid student ID.");
+
+            // Find the user by student ID
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.StudentId == studentId);
-
             if (user == null)
-                return NotFound();
+                return NotFound("User not found.");
 
+            // Find the deployed candidate associated with that user
             var candidate = await _context.CandidatesData
                 .FirstOrDefaultAsync(c => c.ApplicationUserId == user.Id);
 
             if (candidate == null)
-                return NotFound("Candidate not found.");
+                return NotFound("Candidate not found or not deployed.");
 
+            // Remove the candidate
             _context.CandidatesData.Remove(candidate);
             await _context.SaveChangesAsync();
 
             return Ok("Candidate removed successfully.");
         }
+
+        // Controller Action for fetching organizations
+        public IActionResult GetOrganizations()
+        {
+            var organizations = _context.OrganizationsData
+                .Select(o => new { o.Id, o.Name })
+                .ToList();
+
+            return Json(organizations);
+        }
+
+        public IActionResult GetAvailablePositions(int organizationId)
+        {
+            // Get all positions for the organization
+            var positions = _context.OrganizationPosition
+                .Where(p => p.OrganizationId == organizationId)
+                .Where(p => !_context.CandidatesData.Any(c => c.PositionId == p.Id)) // Position not assigned
+                .Select(p => new { p.Id, p.Title })
+                .ToList();
+
+            return Json(positions);
+        }
+
     }
 }

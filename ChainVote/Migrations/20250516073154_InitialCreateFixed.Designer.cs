@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChainVote.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250513062728_RemoveElectionTypeColumn")]
-    partial class RemoveElectionTypeColumn
+    [Migration("20250516073154_InitialCreateFixed")]
+    partial class InitialCreateFixed
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -69,14 +69,19 @@ namespace ChainVote.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("OrganizationId")
+                    b.Property<int?>("OrganizationsDataId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PositionId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("OrganizationId");
+                    b.HasIndex("OrganizationsDataId");
+
+                    b.HasIndex("PositionId");
 
                     b.ToTable("CandidatesData");
                 });
@@ -138,13 +143,7 @@ namespace ChainVote.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CandidateId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("EventsDataId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrganizationId")
+                    b.Property<int?>("OrganizationId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -153,10 +152,6 @@ namespace ChainVote.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CandidateId");
-
-                    b.HasIndex("EventsDataId");
 
                     b.HasIndex("OrganizationId");
 
@@ -461,34 +456,26 @@ namespace ChainVote.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ChainVote.Models.DatabaseEntities.OrganizationsData", "Organization")
+                    b.HasOne("ChainVote.Models.DatabaseEntities.OrganizationsData", null)
                         .WithMany("Candidates")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("OrganizationsDataId");
+
+                    b.HasOne("ChainVote.Models.DatabaseEntities.OrganizationPosition", "Position")
+                        .WithMany("Candidates")
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("ApplicationUser");
 
-                    b.Navigation("Organization");
+                    b.Navigation("Position");
                 });
 
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.OrganizationPosition", b =>
                 {
-                    b.HasOne("ChainVote.Models.DatabaseEntities.CandidatesData", "Candidate")
-                        .WithMany("Positions")
-                        .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", null)
-                        .WithMany("Positions")
-                        .HasForeignKey("EventsDataId");
-
                     b.HasOne("ChainVote.Models.DatabaseEntities.OrganizationsData", "Organization")
                         .WithMany("Positions")
                         .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Candidate");
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Organization");
                 });
@@ -498,7 +485,7 @@ namespace ChainVote.Migrations
                     b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", "Event")
                         .WithMany("Organizations")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Event");
                 });
@@ -573,16 +560,14 @@ namespace ChainVote.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ChainVote.Models.DatabaseEntities.CandidatesData", b =>
-                {
-                    b.Navigation("Positions");
-                });
-
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.EventsData", b =>
                 {
                     b.Navigation("Organizations");
+                });
 
-                    b.Navigation("Positions");
+            modelBuilder.Entity("ChainVote.Models.DatabaseEntities.OrganizationPosition", b =>
+                {
+                    b.Navigation("Candidates");
                 });
 
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.OrganizationsData", b =>

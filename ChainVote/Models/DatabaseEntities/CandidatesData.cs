@@ -16,12 +16,10 @@ namespace ChainVote.Models.DatabaseEntities
         [ForeignKey("ApplicationUserId")]
         public ApplicationUser ApplicationUser { get; set; }
 
-        // Nullable FK to Organization
-        public int? OrganizationId { get; set; }
+        public int? PositionId { get; set; }  // Foreign Key
 
-        [ForeignKey("OrganizationId")]
-        public OrganizationsData Organization { get; set; }
-        public ICollection<OrganizationPosition> Positions { get; set; }
+        [ForeignKey("PositionId")]
+        public OrganizationPosition Position { get; set; }
 
     }
 

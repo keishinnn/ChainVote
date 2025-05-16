@@ -12,15 +12,12 @@ namespace ChainVote.Models.DatabaseEntities
         [MaxLength(100)]
         public string Title { get; set; }
 
-        [Required]
         public int OrganizationId { get; set; }
 
         [ForeignKey("OrganizationId")]
         public OrganizationsData Organization { get; set; }
 
-        public int? CandidateId { get; set; }
+        public ICollection<CandidatesData> Candidates { get; set; } = new List<CandidatesData>();
 
-        [ForeignKey("CandidateId")]
-        public CandidatesData Candidate { get; set; }
     }
 }
