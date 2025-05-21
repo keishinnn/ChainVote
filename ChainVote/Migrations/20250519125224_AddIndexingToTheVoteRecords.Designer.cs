@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChainVote.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250516073154_InitialCreateFixed")]
-    partial class InitialCreateFixed
+    [Migration("20250519125224_AddIndexingToTheVoteRecords")]
+    partial class AddIndexingToTheVoteRecords
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,7 +77,8 @@ namespace ChainVote.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApplicationUserId");
+                    b.HasIndex("ApplicationUserId")
+                        .IsUnique();
 
                     b.HasIndex("OrganizationsDataId");
 
@@ -143,7 +144,7 @@ namespace ChainVote.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("OrganizationId")
+                    b.Property<int>("OrganizationId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -174,7 +175,7 @@ namespace ChainVote.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("EventId")
+                    b.Property<int>("EventId")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -187,6 +188,38 @@ namespace ChainVote.Migrations
                     b.HasIndex("EventId");
 
                     b.ToTable("OrganizationsData");
+                });
+
+            modelBuilder.Entity("ChainVote.Models.DatabaseEntities.VoteRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CandidateId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("VoterId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CandidateId");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("VoterId");
+
+                    b.ToTable("VoteRecords");
                 });
 
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.Votes", b =>
@@ -451,8 +484,8 @@ namespace ChainVote.Migrations
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.CandidatesData", b =>
                 {
                     b.HasOne("ChainVote.Models.Identity.ApplicationUser", "ApplicationUser")
-                        .WithMany("Candidates")
-                        .HasForeignKey("ApplicationUserId")
+                        .WithOne("Candidate")
+                        .HasForeignKey("ChainVote.Models.DatabaseEntities.CandidatesData", "ApplicationUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -475,7 +508,8 @@ namespace ChainVote.Migrations
                     b.HasOne("ChainVote.Models.DatabaseEntities.OrganizationsData", "Organization")
                         .WithMany("Positions")
                         .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Organization");
                 });
@@ -485,9 +519,37 @@ namespace ChainVote.Migrations
                     b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", "Event")
                         .WithMany("Organizations")
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("ChainVote.Models.DatabaseEntities.VoteRecord", b =>
+                {
+                    b.HasOne("ChainVote.Models.DatabaseEntities.CandidatesData", "Candidate")
+                        .WithMany("VoteRecords")
+                        .HasForeignKey("CandidateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", "Event")
+                        .WithMany("VoteRecords")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ChainVote.Models.Identity.ApplicationUser", "Voter")
+                        .WithMany()
+                        .HasForeignKey("VoterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Candidate");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Voter");
                 });
 
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.Votes", b =>
@@ -560,9 +622,16 @@ namespace ChainVote.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ChainVote.Models.DatabaseEntities.CandidatesData", b =>
+                {
+                    b.Navigation("VoteRecords");
+                });
+
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.EventsData", b =>
                 {
                     b.Navigation("Organizations");
+
+                    b.Navigation("VoteRecords");
                 });
 
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.OrganizationPosition", b =>
@@ -579,7 +648,8 @@ namespace ChainVote.Migrations
 
             modelBuilder.Entity("ChainVote.Models.Identity.ApplicationUser", b =>
                 {
-                    b.Navigation("Candidates");
+                    b.Navigation("Candidate")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

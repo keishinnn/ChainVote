@@ -1,6 +1,11 @@
-﻿<h2 class="mb-4">Elections Statistics</h2>
+﻿@{
+    ViewData["Title"] = "DefaultViewElections";
+    Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
+}
 
-<div class="container py-2 ms-2">
+<div class="container py-2">
+    <h2 class="mb-4 fw-bold text-dark"><i class="bi bi-bar-chart-line me-2"></i>Elections Statistics</h2>
+
     <!-- In Progress Elections -->
     <h4 class="text-primary mb-3"><i class="bi bi-clock-history me-2"></i>In Progress</h4>
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
@@ -20,7 +25,7 @@
                         </div>
 
                         <div class="text-end mt-3">
-                            <a asp-controller="ElectionStats" asp-action="ViewElectionStats" asp-route-eventId="@eventItem.Id" class="btn btn-outline-primary btn-sm">
+                            <a asp-controller="DefaultView" asp-action="DefaultViewElectionStats" asp-route-eventId="@eventItem.Id" class="btn btn-outline-primary btn-sm">
                                 View Details
                             </a>
                         </div>
@@ -44,7 +49,7 @@
                         <span class="badge bg-secondary mb-3"><i class="bi bi-check-circle me-1"></i>Completed</span>
 
                         <div class="text-end mt-3">
-                            <a asp-controller="ElectionStats" asp-action="ElectionResults" asp-route-eventId="@eventItem.Id" class="btn btn-outline-success btn-sm">
+                            <a asp-controller="DefaultView" asp-action="DefaultViewElectionResults" asp-route-eventId="@eventItem.Id" class="btn btn-outline-success btn-sm">
                                 View Results
                             </a>
                         </div>
@@ -68,3 +73,4 @@
         });
     </script>
 }
+

@@ -14,6 +14,7 @@ namespace ChainVote.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationDbContext _context;
 
+        // Constructor to inject UserManager, SignInManager, and ApplicationDbContext
         public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, ApplicationDbContext context)
         {
             _userManager = userManager;
@@ -21,12 +22,14 @@ namespace ChainVote.Controllers
             _context = context;
         }
 
+        // GET: Account/Login
         [HttpGet]
         public IActionResult Login()
         {
             return View(new LoginViewModel());
         }
 
+        // POST: Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
@@ -34,29 +37,32 @@ namespace ChainVote.Controllers
             if (!ModelState.IsValid)
                 return View(loginViewModel);
 
-            // Allow login via Email or Student ID
+            // Allow login using Email or Student ID
             ApplicationUser user = await _userManager.FindByEmailAsync(loginViewModel.Username);
             if (user == null)
-                user = await _userManager.FindByNameAsync(loginViewModel.Username); // Assumes StudentId is set as username
+                user = await _userManager.FindByNameAsync(loginViewModel.Username); // StudentId is treated as UserName
 
             if (user != null)
             {
+                // Check if password matches
                 var passwordCheck = await _userManager.CheckPasswordAsync(user, loginViewModel.Password);
                 if (passwordCheck)
                 {
                     var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
                     if (result.Succeeded)
                     {
-                        // Check the user's role
+                        // Determine the user's role
                         var roles = await _userManager.GetRolesAsync(user);
 
                         if (roles.Contains("Admin"))
                         {
-                            return RedirectToAction("Dashboard", "AdminView"); // Redirect admin
+                            // Redirect to Admin dashboard
+                            return RedirectToAction("Dashboard", "AdminView");
                         }
                         else if (roles.Contains("Voter"))
                         {
-                            return RedirectToAction("Index", "UserView"); // Redirect voter
+                            // Redirect to Voter election page
+                            return RedirectToAction("UserViewElections", "UserView");
                         }
                         else
                         {
@@ -74,13 +80,14 @@ namespace ChainVote.Controllers
             return View(loginViewModel);
         }
 
-
+        // GET: Account/Register
         [HttpGet]
         public IActionResult Register()
         {
             return View(new RegisterViewModel());
         }
 
+        // POST: Account/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
@@ -88,6 +95,7 @@ namespace ChainVote.Controllers
             if (!ModelState.IsValid)
                 return View(registerViewModel);
 
+            // Check if email is already taken
             var existingUser = await _userManager.FindByEmailAsync(registerViewModel.Email);
             if (existingUser != null)
             {
@@ -95,9 +103,10 @@ namespace ChainVote.Controllers
                 return View(registerViewModel);
             }
 
+            // Create new user instance
             var newUser = new ApplicationUser
             {
-                UserName = registerViewModel.StudentId, // Login via StudentId
+                UserName = registerViewModel.StudentId, // StudentId is used as username
                 Email = registerViewModel.Email,
                 StudentId = registerViewModel.StudentId,
                 FirstName = registerViewModel.FirstName,
@@ -107,33 +116,39 @@ namespace ChainVote.Controllers
                 Section = registerViewModel.Section
             };
 
+            // Save the new user to the database
             var result = await _userManager.CreateAsync(newUser, registerViewModel.Password);
             if (result.Succeeded)
             {
+                // Assign "Voter" role to user
                 await _userManager.AddToRoleAsync(newUser, "Voter");
+
                 TempData["Success"] = "Registration successful. Please log in.";
                 return RedirectToAction("Register", "Account");
             }
 
+            // Show any validation errors
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
             return View(registerViewModel);
         }
 
-
+        // GET: Account/Logout
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Index", "DefaultView");
+            return RedirectToAction("Index", "DefaultView"); // Redirect to homepage
         }
 
+        // GET: Account/RegisterAdmin
         [HttpGet]
         public IActionResult RegisterAdmin()
         {
             return View(new AdminAccount());
         }
 
+        // POST: Account/RegisterAdmin
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterAdmin(AdminAccount adminAccount)
@@ -141,6 +156,7 @@ namespace ChainVote.Controllers
             if (!ModelState.IsValid)
                 return View(adminAccount);
 
+            // Check if email is already registered
             var existingUser = await _userManager.FindByEmailAsync(adminAccount.Email);
             if (existingUser != null)
             {
@@ -148,12 +164,13 @@ namespace ChainVote.Controllers
                 return View(adminAccount);
             }
 
+            // Create new admin user
             var newUser = new ApplicationUser
             {
                 UserName = adminAccount.Email,
                 Email = adminAccount.Email,
                 StudentId = "Admin123",
-                Section = "Admin",     
+                Section = "Admin",
                 YearLevel = "Admin",
                 Course = "Admin",
                 FirstName = "Admin",
@@ -163,9 +180,10 @@ namespace ChainVote.Controllers
             var result = await _userManager.CreateAsync(newUser, adminAccount.Password);
             if (result.Succeeded)
             {
+                // Assign "Admin" role to user
                 await _userManager.AddToRoleAsync(newUser, "Admin");
 
-                // Optional: Save AdminAccount record too
+                // Save the AdminAccount record to custom table (optional)
                 _context.AdminAccount.Add(adminAccount);
                 await _context.SaveChangesAsync();
 
@@ -173,12 +191,11 @@ namespace ChainVote.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // Display any errors from account creation
             foreach (var error in result.Errors)
                 ModelState.AddModelError(string.Empty, error.Description);
 
             return View(adminAccount);
         }
-
-
     }
 }

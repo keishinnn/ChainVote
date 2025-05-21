@@ -43,6 +43,45 @@ namespace ChainVote.Controllers.CandidatesController
             return Json(new { data = candidates });
         }
 
+        // Method to get eligible (non-candidate, non-admin) users
+        [HttpGet]
+        public IActionResult GetReadyForDeployment()
+        {
+            // Get all user IDs already in CandidatesData
+            var candidateUserIds = _context.CandidatesData
+                .Select(c => c.ApplicationUserId)
+                .ToList();
+
+            // Get all user IDs with the "Admin" role
+            var adminRoleId = _context.Roles
+                .Where(r => r.Name == "Admin")
+                .Select(r => r.Id)
+                .FirstOrDefault();
+
+            var adminUserIds = _context.UserRoles
+                .Where(ur => ur.RoleId == adminRoleId)
+                .Select(ur => ur.UserId)
+                .ToList();
+
+            // Filter users: exclude both admins and those already in CandidatesData
+            var eligibleCandidates = _context.Users
+                .Where(u => !adminUserIds.Contains(u.Id) && !candidateUserIds.Contains(u.Id))
+                .AsEnumerable()
+                .Select(u => new
+                {
+                    studentId = u.StudentId,
+                    fullName = u.FirstName + " " + u.LastName,
+                    yearLevel = FormatHelpers.GetYearWithSuffix(u.YearLevel),
+                    course = u.Course,
+                    section = FormatHelpers.GetSectionWithYear(u.YearLevel, u.Section),
+                    email = u.Email
+                })
+                .ToList();
+
+            return Json(new { data = eligibleCandidates });
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> DeployCandidate(string studentId, int positionId)
         {

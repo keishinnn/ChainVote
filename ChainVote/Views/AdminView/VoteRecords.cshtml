@@ -1,0 +1,50 @@
+﻿@model List<ChainVote.Models.ViewModels.VoteRecordViewModel>
+
+
+@{
+    ViewData["Title"] = "Vote Records";
+    Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
+}
+
+<h2 class="text-2xl font-bold mb-4">Vote Records</h2>
+
+<table id="voteRecordsTable" class="display nowrap w-full">
+    <thead>
+        <tr>
+            <th>Voter</th>
+            <th>Candidate</th>
+            <th>Position</th>
+            <th>Partylist</th>
+            <th>Event</th>
+            <th>Voted At</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var record in Model)
+        {
+            <tr>
+                <td>@record.VoterEmail</td>
+                <td>@record.CandidateName</td>
+                <td>@record.PositionName</td>
+                <td>@record.OrganizationName</td>
+                <td>@record.EventName</td>
+                <td>@record.VotedAt.ToLocalTime().ToString("yyyy-MM-dd hh:mm tt")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            $('#voteRecordsTable').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+}

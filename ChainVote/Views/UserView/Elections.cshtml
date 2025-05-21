@@ -1,36 +1,45 @@
-﻿@{
+﻿@{    
     ViewData["Title"] = "Elections";
     Layout = "~/Views/Shared/_UserViewLayout.cshtml";
 }
 
-<h2 class="mb-4">Election Analytics</h2>
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="bi bi-check2-square me-2"></i>Cast Your Vote</h2>
 
-<div class="card p-4 shadow-sm">
-    <canvas id="electionChart" height="100"></canvas>
+    <div class="mb-3">
+        <label for="eventDropdown" class="form-label">Select Election Event</label>
+        <select id="eventDropdown" class="form-select">
+            <option value="">-- Select Election --</option>
+        </select>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('electionChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Unity', 'Progressive', 'Alliance'],
-                datasets: [{
-                    label: 'Votes',
-                    data: [35, 50, 15],
-                    backgroundColor: ['#0d6efd', '#198754', '#ffc107']
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+        $(document).ready(function () {
+            // Load available elections
+            $.get('/VoteRecords/GetAvailableElections', function (data) {
+                if (data.length === 0) {
+                    $('#eventDropdown').append('<option disabled>No available elections</option>');
+                    return;
                 }
-            }
+                data.forEach(event => {
+                    $('#eventDropdown').append(`<option value="${event.id}">${event.eventName}</option>`);
+                });
+            });
+
+            $('#eventDropdown').on('change', function () {
+                const eventId = $(this).val();
+                if (!eventId) return;
+
+                $.get(`/VoteRecords/HasVoted?eventId=${eventId}`, function (res) {
+                    if (res.alreadyVoted) {
+                        alert("You have already voted in this event.");
+                    } else {
+                        window.location.href = `/VoteRecords/VoteForm?eventId=${eventId}`;
+                    }
+                });
+            });
         });
     </script>
 }

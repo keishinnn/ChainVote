@@ -46,5 +46,6 @@ namespace ChainVote.Models.DatabaseEntities
         public string? AllowedCourses { get; set; }
 
         public ICollection<OrganizationsData> Organizations { get; set; } = new List<OrganizationsData>();
+        public ICollection<VoteRecord> VoteRecords { get; set; } = new List<VoteRecord>();
     }
 }

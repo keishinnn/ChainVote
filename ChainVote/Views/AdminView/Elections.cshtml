@@ -52,12 +52,10 @@
                         <div class="card-body">
                             <h5 class="card-title">@election.Event.EventName</h5>
                             <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
-                            <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
+                            <p class="card-text">End Date: @election.Event.EndDate.ToString("MMMM d, yyyy")</p>
                             <p class="card-text"><small class="text-muted">Awaiting status</small></p>
 
                             <div class="d-flex gap-2 mt-3">
-                                <a href="/AdminView/StartElection/@election.Event.Id" class="btn btn-success btn-sm">Start</a>
-                                <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
                                 <button type="button" class="btn btn-outline-primary btn-sm"
                                         onclick="openEditAllowedVotersModal(@election.Event.Id)">
                                     Edit Allowed Voters
@@ -88,17 +86,10 @@
                         <div class="card-body">
                             <h5 class="card-title">@election.Event.EventName</h5>
                             <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
-                            <p class="card-text">Voters: @election.TotalVoted / @election.TotalVoters</p>
+                            <p class="card-text">End Date: @election.Event.EndDate.ToString("MMMM d, yyyy")</p>
                             <p class="card-text"><small class="text-muted">In progress</small></p>
 
                             <div class="d-flex gap-2 mt-3">
-                                <a href="/AdminView/StopElection/@election.Event.Id" class="btn btn-danger btn-sm">Stop</a>
-                                <a href="/AdminView/EditPartylists/@election.Event.Id" class="btn btn-outline-secondary btn-sm">Edit Partylists</a>
-                                <button type="button" class="btn btn-outline-primary btn-sm"
-                                        onclick="openEditAllowedVotersModal(@election.Event.Id)">
-                                    Edit Allowed Voters
-                                </button>
-
                                 <button type="button" class="btn btn-outline-danger btn-sm"
                                         data-bs-toggle="modal"
                                         data-bs-target="#deleteConfirmationModal"
@@ -106,6 +97,41 @@
                                         data-election-name="@election.Event.EventName">
                                     Delete
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Completed Elections -->
+    <div class="tab-pane fade" id="completed" role="tabpanel">
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var election in Model.CompletedElections)
+            {
+                <div class="col">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@election.Event.EventName</h5>
+                            <p class="card-text">Start Date: @election.Event.StartDate.ToString("MMMM d, yyyy")</p>
+                            <p class="card-text">End Date: @election.Event.EndDate.ToString("MMMM d, yyyy")</p>
+                            <p class="card-text"><small class="text-muted">Completed</small></p>
+
+                            <div class="d-flex gap-2 mt-3">
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteConfirmationModal"
+                                        data-election-id="@election.Event.Id"
+                                        data-election-name="@election.Event.EventName">
+                                    Delete
+                                </button>
+                            </div>
+
+                            <div class="text-end mt-3">
+                                <a asp-controller="ElectionStats" asp-action="ElectionResults" asp-route-eventId="@election.Event.Id" class="btn btn-outline-success btn-sm">
+                                    View Results
+                                </a>
                             </div>
                         </div>
                     </div>

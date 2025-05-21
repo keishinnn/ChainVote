@@ -4,6 +4,7 @@ using ChainVote.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ChainVote.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250519120908_UpdateVoteRecordRelationships")]
+    partial class UpdateVoteRecordRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -525,13 +528,13 @@ namespace ChainVote.Migrations
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.VoteRecord", b =>
                 {
                     b.HasOne("ChainVote.Models.DatabaseEntities.CandidatesData", "Candidate")
-                        .WithMany("VoteRecords")
+                        .WithMany()
                         .HasForeignKey("CandidateId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ChainVote.Models.DatabaseEntities.EventsData", "Event")
-                        .WithMany("VoteRecords")
+                        .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -539,7 +542,7 @@ namespace ChainVote.Migrations
                     b.HasOne("ChainVote.Models.Identity.ApplicationUser", "Voter")
                         .WithMany()
                         .HasForeignKey("VoterId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Candidate");
@@ -619,16 +622,9 @@ namespace ChainVote.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ChainVote.Models.DatabaseEntities.CandidatesData", b =>
-                {
-                    b.Navigation("VoteRecords");
-                });
-
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.EventsData", b =>
                 {
                     b.Navigation("Organizations");
-
-                    b.Navigation("VoteRecords");
                 });
 
             modelBuilder.Entity("ChainVote.Models.DatabaseEntities.OrganizationPosition", b =>

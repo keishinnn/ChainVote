@@ -16,7 +16,7 @@
     <header>
         <nav class="navbar fixed-top navbar-expand-lg shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold text-white ms-5" href="/UserView/Index">ChainVote</a>
+                <a class="navbar-brand fw-bold text-white ms-5" href="/UserView/UserViewElections">ChainVote</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -24,10 +24,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-4">
                         <li class="nav-item me-3">
-                            <a class="nav-link text-white" href="/UserView/Index"><i class="bi bi-house-door"></i> Home</a>
-                        </li>
-                        <li class="nav-item me-3">
-                            <a class="nav-link text-white" href="/UserView/Vote"><i class="bi bi-check2-square"></i> Vote</a>
+                            <a class="nav-link text-white" href="/UserView/UserViewElections"><i class="bi bi-house-door"></i> Home</a>
                         </li>
                         <li class="nav-item me-3">
                             <a class="nav-link text-white" href="/UserView/Elections"><i class="bi bi-bar-chart-line"></i> Elections</a>
@@ -52,8 +49,6 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="/UserView/Settings"><i class="bi bi-gear me-2"></i> Settings</a></li>
-                                <li><a class="dropdown-item" href="/UserView/Display"><i class="bi bi-display me-2"></i> Display</a></li>
-                                <li><a class="dropdown-item" href="/UserView/Feedback"><i class="bi bi-chat-left-text me-2"></i> Give Feedback</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="/Account/Logout"><i class="bi bi-box-arrow-right me-2"></i> Log Out</a></li>
                             </ul>
@@ -79,6 +74,7 @@
     </footer>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

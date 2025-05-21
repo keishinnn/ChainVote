@@ -128,40 +128,6 @@
     </div>
 </div>
 
-
-
-
-<!-- Edit Partylist Modal -->
-<div class="modal fade" id="editPartylistModal" tabindex="-1" aria-labelledby="editPartylistModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editPartylistModalLabel">Edit Partylist</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="editPartylistId" />
-                <div class="mb-3">
-                    <label for="editPartylistName" class="form-label">Partylist Name</label>
-                    <input type="text" class="form-control" id="editPartylistName" />
-                </div>
-                <div class="mb-3">
-                    <label for="editElectionType" class="form-label">Election Type</label>
-                    <input type="text" class="form-control" id="editElectionType" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Positions</label>
-                    <ul class="list-group" id="editPositionsList"></ul>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Shared Delete Confirmation Modal -->
 <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -245,7 +211,6 @@
                     const button = document.createElement("button");
                     button.type = "button";
                     button.className = "btn btn-sm btn-link assign-btn";
-                    button.textContent = "Assign";
                     button.onclick = () => openAssignCandidateModal(pos, li, organizationId);
 
                     span.appendChild(candidateInfo);

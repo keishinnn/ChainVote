@@ -8,7 +8,7 @@ using ChainVote.Models.Identity;
 
 namespace ChainVote.Controllers
 {
-    [Authorize]
+    [Authorize ()]
     public class UserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -24,9 +24,6 @@ namespace ChainVote.Controllers
             _context = context;
         }
 
-        // ====================
-        // Edit Email
-        // ====================
         [HttpGet]
         public IActionResult EditEmail() => View();
 
@@ -79,9 +76,6 @@ namespace ChainVote.Controllers
             return View(model);
         }
 
-        // ====================
-        // Edit Password
-        // ====================
         [HttpGet]
         public IActionResult EditPassword() => View();
 

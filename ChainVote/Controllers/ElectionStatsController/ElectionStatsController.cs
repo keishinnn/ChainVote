@@ -1,61 +1,28 @@
-﻿using System.Diagnostics;
-using ChainVote.Data;
-using ChainVote.Models;
+﻿using ChainVote.Data;
 using ChainVote.Models.DatabaseEntities;
+using ChainVote.Models.Dto;
+using ChainVote.Models.Identity;
 using ChainVote.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ChainVote.Controllers.ViewsController
+namespace ChainVote.Controllers.ElectionStatsController
 {
-    public class DefaultViewController : Controller
+    [Authorize(Roles = "Admin")]
+    public class ElectionStatsController : Controller
     {
-        private readonly ILogger<DefaultViewController> _logger;
+
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<ElectionStatsController> _logger;
 
-        public DefaultViewController(ApplicationDbContext context, ILogger<DefaultViewController> logger)
+        public ElectionStatsController(ApplicationDbContext context, ILogger<ElectionStatsController> logger)
         {
-            _logger = logger;
             _context = context;
+            _logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
-        }
-
-        public IActionResult About()
-        {
-            return View();
-        }
-
-        public IActionResult Login()
-        {
-            return View();
-        }
-
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        public IActionResult RegisterAdmin()
-        {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        public IActionResult DefaultViewElections()
+        public IActionResult Dashboard()
         {
             var allEvents = _context.EventsData.Include(e => e.VoteRecords).ToList();
 
@@ -80,10 +47,10 @@ namespace ChainVote.Controllers.ViewsController
                     }).ToList()
             };
 
-            return View("~/Views/DefaultView/DefaultViewElections.cshtml", viewModel);
+            return View("~/Views/AdminView/Dashboard.cshtml", viewModel);
         }
 
-        public IActionResult DefaultViewElectionStats(int eventId)
+        public IActionResult ViewElectionStats(int eventId)
         {
             var eventData = _context.EventsData.FirstOrDefault(e => e.Id == eventId);
             if (eventData == null)
@@ -137,10 +104,11 @@ namespace ChainVote.Controllers.ViewsController
                         }).ToList()
                     }).ToList()
             };
-            return View("~/Views/DefaultView/DefaultViewLiveStats.cshtml", viewModel);
+            _logger.LogInformation("VoteForm called with total voters: {TotalVoters}", totalEligibleVoters);
+            return View("~/Views/AdminView/LiveStats.cshtml", viewModel);
         }
 
-        public IActionResult DefaultViewElectionResults(int eventId)
+        public IActionResult ElectionResults(int eventId)
         {
             var eventData = _context.EventsData.FirstOrDefault(e => e.Id == eventId);
             if (eventData == null)
@@ -194,7 +162,9 @@ namespace ChainVote.Controllers.ViewsController
                         }).ToList()
                     }).ToList()
             };
-            return View("~/Views/DefaultView/DefaultViewElectionResults.cshtml", viewModel);
+            _logger.LogInformation("VoteForm called with total voters: {TotalVoters}", totalEligibleVoters);
+            return View("~/Views/AdminView/ElectionResults.cshtml", viewModel);
         }
+
     }
 }

@@ -1,0 +1,104 @@
+﻿@model List<ChainVote.Models.ViewModels.UserWithVotesViewModel>
+@{
+    ViewData["Title"] = "Delete User Votes";
+    Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
+}
+
+<h2 class="text-2xl font-bold mb-4">Delete a User's Vote for a Specific Election</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="bg-green-100 text-green-800 p-2 rounded mb-4">@TempData["Message"]</div>
+}
+
+<table id="usersTable" class="display nowrap w-full">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.FullName</td>
+                <td>
+                    <button class="btn btn-danger btn-sm open-delete-modal"
+                            data-userid="@user.UserId"
+                            data-username="@user.FullName">
+                        Delete Vote
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="deleteVoteModal" tabindex="-1" aria-labelledby="deleteVoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="deleteVoteForm" method="post" asp-action="DeleteUserVotes">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Vote for <span id="modalUserName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="userId" id="modalUserId" />
+                    <div class="mb-3">
+                        <label for="eventId" class="form-label">Select Election Event</label>
+                        <select name="eventId" id="eventId" class="form-select" required>
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Delete</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            $('#usersTable').DataTable({
+                responsive: true
+            });
+
+            $('.open-delete-modal').click(function () {
+                const userId = $(this).data('userid');
+                const userName = $(this).data('username');
+
+                $('#modalUserId').val(userId);
+                $('#modalUserName').text(userName);
+
+                // Load elections dynamically
+                $.get('/AdminView/GetUserElectionEvents', { userId }, function (data) {
+                    const select = $('#eventId');
+                    select.empty();
+                    if (data.length === 0) {
+                        select.append('<option>No elections found</option>');
+                    } else {
+                        select.append('<option value="">-- Select Election --</option>');
+                        data.forEach(e => {
+                            select.append(`<option value="${e.value}">${e.text}</option>`);
+                        });
+                    }
+
+                    $('#deleteVoteModal').modal('show');
+                });
+            });
+        });
+    </script>
+}

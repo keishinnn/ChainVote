@@ -20,6 +20,7 @@ namespace ChainVote.Models.DatabaseEntities
 
         [ForeignKey("PositionId")]
         public OrganizationPosition Position { get; set; }
+        public ICollection<VoteRecord> VoteRecords { get; set; } = new List<VoteRecord>();
 
     }
 

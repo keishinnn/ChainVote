@@ -10,6 +10,8 @@ namespace ChainVote.Models.ViewModels
         public List<ElectionSummary> AwaitingElections { get; set; } = new();
         public List<ElectionSummary> InProgressElections { get; set; } = new();
         public List<ElectionSummary> CompletedElections { get; set; } = new();
+
+        public int EventId { get; set; }
     }
 
     public class ElectionSummary
