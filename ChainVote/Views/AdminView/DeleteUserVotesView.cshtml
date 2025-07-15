@@ -8,9 +8,11 @@
 
 @if (TempData["Message"] != null)
 {
+    // Display success or info message after an action
     <div class="bg-green-100 text-green-800 p-2 rounded mb-4">@TempData["Message"]</div>
 }
 
+<!-- Table listing users who have votes, with action button to delete their votes -->
 <table id="usersTable" class="display nowrap w-full">
     <thead>
         <tr>
@@ -26,6 +28,7 @@
                 <td>@user.Email</td>
                 <td>@user.FullName</td>
                 <td>
+                    <!-- Button to open modal for deleting votes of the selected user -->
                     <button class="btn btn-danger btn-sm open-delete-modal"
                             data-userid="@user.UserId"
                             data-username="@user.FullName">
@@ -37,26 +40,32 @@
     </tbody>
 </table>
 
-<!-- Bootstrap Modal -->
+<!-- Modal dialog for confirming deletion of user's vote for a selected election event -->
 <div class="modal fade" id="deleteVoteModal" tabindex="-1" aria-labelledby="deleteVoteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
+        <!-- Form posts to DeleteUserVotes action on submission -->
         <form id="deleteVoteForm" method="post" asp-action="DeleteUserVotes">
             <div class="modal-content">
                 <div class="modal-header">
+                    <!-- Modal title dynamically shows user name -->
                     <h5 class="modal-title">Delete Vote for <span id="modalUserName"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Hidden field to hold the user ID -->
                     <input type="hidden" name="userId" id="modalUserId" />
                     <div class="mb-3">
                         <label for="eventId" class="form-label">Select Election Event</label>
+                        <!-- Dropdown to select the election event; options loaded dynamically -->
                         <select name="eventId" id="eventId" class="form-select" required>
                             <option value="">Loading...</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <!-- Cancel button closes the modal -->
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <!-- Submit button triggers vote deletion -->
                     <button type="submit" class="btn btn-danger">Confirm Delete</button>
                 </div>
             </div>
@@ -65,6 +74,7 @@
 </div>
 
 @section Scripts {
+    <!-- DataTables JS and CSS for enhanced table functionality -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
@@ -72,30 +82,37 @@
 
     <script>
         $(document).ready(function () {
+            // Initialize DataTable with responsive support
             $('#usersTable').DataTable({
                 responsive: true
             });
 
+            // Handler for clicking the delete vote button
             $('.open-delete-modal').click(function () {
                 const userId = $(this).data('userid');
                 const userName = $(this).data('username');
 
+                // Set modal fields with selected user's info
                 $('#modalUserId').val(userId);
                 $('#modalUserName').text(userName);
 
-                // Load elections dynamically
+                // Fetch election events related to the user dynamically via AJAX
                 $.get('/AdminView/GetUserElectionEvents', { userId }, function (data) {
                     const select = $('#eventId');
                     select.empty();
+
+                    // If no elections returned, show appropriate message
                     if (data.length === 0) {
                         select.append('<option>No elections found</option>');
                     } else {
+                        // Populate dropdown with fetched election events
                         select.append('<option value="">-- Select Election --</option>');
                         data.forEach(e => {
                             select.append(`<option value="${e.value}">${e.text}</option>`);
                         });
                     }
 
+                    // Show the modal after populating the dropdown
                     $('#deleteVoteModal').modal('show');
                 });
             });

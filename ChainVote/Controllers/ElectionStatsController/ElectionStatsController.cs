@@ -12,7 +12,6 @@ namespace ChainVote.Controllers.ElectionStatsController
     [Authorize(Roles = "Admin")]
     public class ElectionStatsController : Controller
     {
-
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ElectionStatsController> _logger;
 
@@ -24,8 +23,10 @@ namespace ChainVote.Controllers.ElectionStatsController
 
         public IActionResult Dashboard()
         {
+            // Fetch all election events along with their vote records
             var allEvents = _context.EventsData.Include(e => e.VoteRecords).ToList();
 
+            // Create view model with InProgress and Completed election summaries
             var viewModel = new ElectionOverviewViewModel
             {
                 InProgressElections = allEvents
@@ -47,15 +48,18 @@ namespace ChainVote.Controllers.ElectionStatsController
                     }).ToList()
             };
 
+            // Return the Dashboard view with the data
             return View("~/Views/AdminView/Dashboard.cshtml", viewModel);
         }
 
         public IActionResult ViewElectionStats(int eventId)
         {
+            // Fetch event data by eventId
             var eventData = _context.EventsData.FirstOrDefault(e => e.Id == eventId);
             if (eventData == null)
                 return NotFound();
 
+            // Parse allowed sections, years, and courses from event data
             var allowedSections = eventData.AllowedSections?.Split(',').Select(s => s.Trim()).ToList() ?? new();
             var allowedYears = eventData.AllowedYearLevels?.Split(',')
                                 .Select(s => s.Trim()
@@ -66,6 +70,7 @@ namespace ChainVote.Controllers.ElectionStatsController
                                 .ToList() ?? new();
             var allowedCourses = eventData.AllowedCourses?.Split(',').Select(s => s.Trim()).ToList() ?? new();
 
+            // Count total eligible voters based on restrictions
             var totalEligibleVoters = _context.Users.Count(u =>
                 u.Section != null && u.YearLevel != null && u.Course != null &&
                 allowedSections.Contains(u.Section.Trim()) &&
@@ -73,16 +78,19 @@ namespace ChainVote.Controllers.ElectionStatsController
                 allowedCourses.Contains(u.Course.Trim())
             );
 
+            // Fetch candidates for this election event
             var candidates = _context.CandidatesData
                 .Include(c => c.Position)
                 .Include(c => c.ApplicationUser)
                 .Where(c => c.Position.Organization.EventId == eventId)
                 .ToList();
 
+            // Fetch votes for this election event
             var votes = _context.VoteRecords
                 .Where(v => v.EventId == eventId)
                 .ToList();
 
+            // Build view model for stats page
             var viewModel = new ElectionStatsViewModel
             {
                 EventId = eventId,
@@ -104,16 +112,19 @@ namespace ChainVote.Controllers.ElectionStatsController
                         }).ToList()
                     }).ToList()
             };
-            _logger.LogInformation("VoteForm called with total voters: {TotalVoters}", totalEligibleVoters);
+
+            // return LiveStats view
             return View("~/Views/AdminView/LiveStats.cshtml", viewModel);
         }
 
         public IActionResult ElectionResults(int eventId)
         {
+            // Fetch event data by eventId
             var eventData = _context.EventsData.FirstOrDefault(e => e.Id == eventId);
             if (eventData == null)
                 return NotFound();
 
+            // Parse allowed sections, years, and courses from event data
             var allowedSections = eventData.AllowedSections?.Split(',').Select(s => s.Trim()).ToList() ?? new();
             var allowedYears = eventData.AllowedYearLevels?.Split(',')
                                 .Select(s => s.Trim()
@@ -124,6 +135,7 @@ namespace ChainVote.Controllers.ElectionStatsController
                                 .ToList() ?? new();
             var allowedCourses = eventData.AllowedCourses?.Split(',').Select(s => s.Trim()).ToList() ?? new();
 
+            // Count total eligible voters based on restrictions
             var totalEligibleVoters = _context.Users.Count(u =>
                 u.Section != null && u.YearLevel != null && u.Course != null &&
                 allowedSections.Contains(u.Section.Trim()) &&
@@ -131,16 +143,19 @@ namespace ChainVote.Controllers.ElectionStatsController
                 allowedCourses.Contains(u.Course.Trim())
             );
 
+            // Fetch candidates for this election event
             var candidates = _context.CandidatesData
                 .Include(c => c.Position)
                 .Include(c => c.ApplicationUser)
                 .Where(c => c.Position.Organization.EventId == eventId)
                 .ToList();
 
+            // Fetch votes for this election event
             var votes = _context.VoteRecords
                 .Where(v => v.EventId == eventId)
                 .ToList();
 
+            // Build view model for final results
             var viewModel = new ElectionStatsViewModel
             {
                 EventId = eventId,
@@ -162,9 +177,9 @@ namespace ChainVote.Controllers.ElectionStatsController
                         }).ToList()
                     }).ToList()
             };
-            _logger.LogInformation("VoteForm called with total voters: {TotalVoters}", totalEligibleVoters);
+
+            // return ElectionResults view
             return View("~/Views/AdminView/ElectionResults.cshtml", viewModel);
         }
-
     }
 }

@@ -12,32 +12,38 @@
     </div>
 }
 
-
 <div class="login-container">
     <h2 class="text-center mb-4">Login</h2>
-    <form method="post" asp-action="Login" asp-controller="Account">
+
+    <form asp-action="Login" asp-controller="Account" method="post">
+        @Html.AntiForgeryToken()
+
+        <!-- Input for Student ID or Email -->
         <div class="mb-3">
-            <label for="username" class="form-label">Student ID or Email</label>
-            <input name="username" id="username" class="form-control" placeholder="Enter your student ID or email" required />
+            <label asp-for="Username" class="form-label"></label>
+            <input asp-for="Username" class="form-control" placeholder="Enter your student ID or email" />
+            <span asp-validation-for="Username" class="text-danger"></span>
         </div>
 
+        <!-- Input for Password with toggle visibility -->
         <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
+            <label asp-for="Password" class="form-label"></label>
             <div class="input-group">
-                <input name="password" id="loginPassword" class="form-control" placeholder="Enter your password" type="password" required />
+                <input asp-for="Password" class="form-control" placeholder="Enter your password" />
                 <button type="button" class="btn btn-outline-secondary" id="toggleLoginPassword">
                     <i class="bi bi-eye-slash"></i>
                 </button>
             </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
         <br>
-        <button class="btn btn-primary w-100">Login</button>
+
+        <button class="btn btn-primary w-100" type="submit">Login</button>
     </form>
 
     <p class="text-danger mt-3">@ViewBag.Message</p>
 
-    <!-- Links for Register and Forgot Password -->
     <div class="text-center mt-2">
         <a href="/Account/Register">Don't have an account? Register here</a>
         <br>
@@ -45,10 +51,14 @@
 </div>
 
 @section Scripts {
+    <!-- Unobtrusive validation -->
+    <partial name="_ValidationScriptsPartial" />
+
     <script>
         function togglePasswordVisibility(inputId, buttonId) {
             const passwordInput = document.getElementById(inputId);
             const toggleButton = document.getElementById(buttonId);
+
             const type = passwordInput.type === 'password' ? 'text' : 'password';
             passwordInput.type = type;
 
@@ -61,7 +71,7 @@
             const toggleBtn = document.getElementById('toggleLoginPassword');
             if (toggleBtn) {
                 toggleBtn.addEventListener('click', function () {
-                    togglePasswordVisibility('loginPassword', 'toggleLoginPassword');
+                    togglePasswordVisibility('Password', 'toggleLoginPassword');
                 });
             }
         });

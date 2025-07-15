@@ -1,37 +1,41 @@
-﻿@* Views/Shared/_DefaultViewLayout.cshtml *@
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <!-- Meta tags for character encoding and responsive design -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Dynamic page title using ViewData -->
     <title>@ViewData["Title"] - DefaultView</title>
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS for base styling -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Custom site CSS with cache busting -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
-    <!-- Bootstrap Icons (only include once in your layout or head) -->
+    <!-- Bootstrap Icons CDN for icon fonts (include only once) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
 </head>
 
 <body class="d-flex flex-column min-vh-100">
+    <!-- Header with fixed top navbar -->
     <header>
         <nav class="navbar fixed-top navbar-expand-sm navbar-light bg-white border-bottom box-shadow shadow-sm">
             <div class="container">
-                <!-- Blockchain Voting Brand -->
+                <!-- Brand logo/name linking to home -->
                 <a class="navbar-brand fw-bold me-5" href="/">ChainVote</a>
 
-                <!-- Navbar Toggler for mobile view -->
+                <!-- Responsive navbar toggler for smaller screens -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDefault"
                         aria-controls="navbarDefault" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
+                <!-- Navbar menu items container -->
                 <div class="collapse navbar-collapse" id="navbarDefault">
-                    <!-- Navbar Links for Home, Elections, About -->
+                    <!-- Left-aligned navigation links -->
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="/DefaultView/Index">Home</a>
@@ -43,7 +47,7 @@
                             <a class="nav-link" href="/DefaultView/About">About</a>
                         </li>
                     </ul>
-                    <!-- Login and Register Buttons -->
+                    <!-- Right-aligned Login and Register buttons -->
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
                             <a class="btn btn-outline-primary me-2" href="/Account/Login">Login</a>
@@ -57,29 +61,33 @@
         </nav>
     </header>
 
-    <!-- Main Content Area -->
+    <!-- Main content container with margin top for spacing under navbar -->
     <div class="container mt-4 flex-grow-1">
         <main class="main-content">
             <div class="container">
+                <!-- Placeholder for child views' content -->
                 @RenderBody()
             </div>
         </main>
     </div>
 
-    <!-- Footer -->
+    <!-- Footer fixed at the bottom with light background -->
     <footer class="mt-auto border-top text-muted py-3 bg-light">
         <div class="container text-center">
             &copy; 2025 - ChainVote
         </div>
     </footer>
 
-    <!-- Script Inclusions -->
+    <!-- jQuery library -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap JavaScript bundle including Popper.js -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Additional Bootstrap JS from CDN (optional, can be removed if duplicate) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom site JavaScript with cache busting -->
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <!-- Render Additional Scripts if Available -->
+    <!-- Section to inject page-specific scripts -->
     @RenderSection("Scripts", required: false)
 
 </body>

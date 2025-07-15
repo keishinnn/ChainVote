@@ -5,7 +5,7 @@
 
 <h2 class="mb-4">Manage Candidates</h2>
 
-<!-- Ready for Deployment -->
+<!-- SECTION: Ready for Deployment Table -->
 <div class="card shadow mb-4">
     <div class="card-header bg-primary text-white">
         <h5 class="mb-0">Ready for Deployment</h5>
@@ -28,7 +28,7 @@
     </div>
 </div>
 
-<!-- Deployed Candidates -->
+<!-- SECTION: Deployed Candidates Table -->
 <div class="card shadow mb-4">
     <div class="card-header bg-success text-white">
         <h5 class="mb-0">Deployed Candidates</h5>
@@ -51,7 +51,7 @@
     </div>
 </div>
 
-<!-- Modal for Confirming Candidate Deployment -->
+<!-- MODAL: Candidate Deployment Selection -->
 <div class="modal fade" id="deployModal" tabindex="-1" aria-labelledby="deployModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -60,12 +60,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- Organization Dropdown -->
                 <div class="mb-3">
                     <label for="organizationDropdown" class="form-label">Organization</label>
                     <select id="organizationDropdown" class="form-control">
                         <option value="">Choose an Organization</option>
                     </select>
                 </div>
+
+                <!-- Position Dropdown -->
                 <div class="mb-3">
                     <label for="positionDropdown" class="form-label">Position</label>
                     <select id="positionDropdown" class="form-control">
@@ -81,7 +84,7 @@
     </div>
 </div>
 
-<!-- Modal for Confirming Deletion of Deployed Candidate -->
+<!-- MODAL: Confirm Deletion of Deployed Candidate -->
 <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -102,33 +105,36 @@
 
 @section Scripts {
     <script>
+        // Store IDs of candidate to deploy or delete
         let candidateToDeploy = '';
         let candidateToDelete = '';
 
+        // Assign candidate ID for deployment and open deployment modal
         function setCandidateToDeploy(studentId) {
             candidateToDeploy = studentId;
-            loadOrganizations();  // Load organizations when selecting candidate to deploy
+            loadOrganizations();
             $('#deployModal').modal('show');
         }
 
+        // Assign candidate ID for deletion and open confirmation modal
         function setCandidateToDelete(studentId) {
             candidateToDelete = studentId;
             $('#confirmDeleteModal').modal('show');
         }
 
-        // Fetch Organizations for the first dropdown
+        // Load list of organizations from server
         function loadOrganizations() {
             $.ajax({
                 url: '@Url.Action("GetOrganizations", "CandidatesData")',
                 method: 'GET',
                 success: function (data) {
                     let organizationsDropdown = $('#organizationDropdown');
-                    organizationsDropdown.empty();  // Clear existing options
+                    organizationsDropdown.empty();
                     organizationsDropdown.append('<option value="">Choose an Organization</option>');
                     data.forEach(org => {
                         organizationsDropdown.append(`<option value="${org.id}">${org.name}</option>`);
                     });
-                    loadPositions(); // Load positions when organizations are loaded
+                    loadPositions(); // Load positions after organizations
                 },
                 error: function (xhr) {
                     alert(xhr.responseText || "Failed to fetch organizations.");
@@ -136,20 +142,18 @@
             });
         }
 
-        // Fetch Positions for the second dropdown based on selected organization
+        // Load available positions for selected organization
         function loadPositions() {
             const organizationId = $('#organizationDropdown').val();
-            console.log('Organization ID:', organizationId);  // Check if this is logging
-
-            if (!organizationId) return; // Do not fetch if no organization is selected
+            if (!organizationId) return;
 
             $.ajax({
-                url: '@Url.Action("GetAvailablePositions", "CandidatesData")', // Make sure the URL is correct
+                url: '@Url.Action("GetAvailablePositions", "CandidatesData")',
                 method: 'GET',
                 data: { organizationId: organizationId },
                 success: function (data) {
                     let positionsDropdown = $('#positionDropdown');
-                    positionsDropdown.empty();  // Clear existing options
+                    positionsDropdown.empty();
                     positionsDropdown.append('<option value="">Choose a Position</option>');
                     data.forEach(position => {
                         positionsDropdown.append(`<option value="${position.id}">${position.title}</option>`);
@@ -161,7 +165,7 @@
             });
         }
 
-        // Deploy Candidate Action
+        // Deploy candidate to selected organization and position
         $('#deployBtn').on('click', function () {
             const organizationId = $('#organizationDropdown').val();
             const positionId = $('#positionDropdown').val();
@@ -190,7 +194,7 @@
             });
         });
 
-                // Confirm Delete Button Click Handler
+        // Delete candidate from deployed list
         $('#confirmDeleteBtn').on('click', function () {
             if (!candidateToDelete) return;
 
@@ -203,7 +207,7 @@
                     $('#readyCandidatesTable').DataTable().ajax.reload();
                     $('#deployedCandidatesTable').DataTable().ajax.reload();
                     $('#confirmDeleteModal').modal('hide');
-                    candidateToDelete = ''; // Reset the candidate
+                    candidateToDelete = '';
                 },
                 error: function (xhr) {
                     alert(xhr.responseText || "Failed to delete candidate.");
@@ -211,9 +215,9 @@
             });
         });
 
-
+        // Initialize DataTables on page load
         $(document).ready(function () {
-            // Ready for Deployment Table
+            // Initialize Ready for Deployment table
             $('#readyCandidatesTable').DataTable({
                 processing: true,
                 serverSide: false,
@@ -243,7 +247,7 @@
                 }
             });
 
-            // Deployed Candidates Table
+            // Initialize Deployed Candidates table
             $('#deployedCandidatesTable').DataTable({
                 processing: true,
                 serverSide: false,
@@ -274,6 +278,7 @@
             });
         });
 
+        // Reload positions when organization dropdown value changes
         $(document).on('change', '#organizationDropdown', function () {
             loadPositions();
         });

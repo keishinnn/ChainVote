@@ -1,19 +1,27 @@
 ﻿@model ChainVote.Models.ViewModels.ElectionStatsViewModel
 
 @{
+    // Set the title of the page and use the shared layout for regular users
     ViewData["Title"] = "Live Vote Count";
     Layout = "~/Views/Shared/_UserViewLayout.cshtml";
 }
 
 <div class="container mt-3 mb-5 animate-fadein">
+    <!-- Header section showing election title and start date -->
     <div class="bg-white shadow rounded p-4 mb-4">
-        <h2 class="fw-bold text-primary mb-2"><i class="bi bi-bar-chart-line me-2"></i>@Model.EventTitle</h2>
-        <p class="text-muted">Started on <i class="bi bi-calendar-event me-1"></i>@Model.EventStartDate.ToString("MMMM dd, yyyy")</p>
+        <h2 class="fw-bold text-primary mb-2">
+            <i class="bi bi-bar-chart-line me-2"></i>@Model.EventTitle
+        </h2>
+        <p class="text-muted">
+            Started on <i class="bi bi-calendar-event me-1"></i>@Model.EventStartDate.ToString("MMMM dd, yyyy")
+        </p>
     </div>
 
-    <!-- Total Participation -->
+    <!-- Stats overview: eligible voters, votes cast, turnout percentage -->
     <div class="bg-light border rounded p-4 mb-5 shadow-sm">
-        <h5 class="text-dark fw-semibold mb-3"><i class="bi bi-people-fill me-2"></i>Total Participation</h5>
+        <h5 class="text-dark fw-semibold mb-3">
+            <i class="bi bi-people-fill me-2"></i>Total Participation
+        </h5>
         <div class="row g-3">
             <div class="col-md-4">
                 <div class="p-3 bg-white rounded shadow-sm text-center">
@@ -36,15 +44,18 @@
         </div>
     </div>
 
-    <!-- Positions and Candidates -->
+    <!-- List of positions and candidates with vote bars -->
     <div id="positionsContainer">
         @foreach (var position in Model.Positions)
         {
             <div class="mb-5 position-block" data-position="@position.PositionTitle">
-                <h5 class="fw-semibold border-bottom pb-2 mb-4 text-dark"><i class="bi bi-person-badge me-2"></i>@position.PositionTitle</h5>
+                <h5 class="fw-semibold border-bottom pb-2 mb-4 text-dark">
+                    <i class="bi bi-person-badge me-2"></i>@position.PositionTitle
+                </h5>
 
                 @foreach (var candidate in position.Candidates.OrderByDescending(c => c.VoteCount))
                 {
+                    // Calculate vote percentage for each candidate
                     var percent = Model.TotalVoters == 0 ? 0 : ((double)candidate.VoteCount / Model.TotalVoters) * 100;
 
                     <div class="mb-3">
@@ -65,7 +76,7 @@
         }
     </div>
 
-    <!-- Back Button -->
+    <!-- Button to return to elections list -->
     <div class="text-end mt-4">
         <a asp-controller="UserView" asp-action="UserViewElections" class="btn btn-outline-secondary rounded-pill px-4">
             <i class="bi bi-arrow-left-circle me-2"></i>Back to List
@@ -74,16 +85,20 @@
 </div>
 
 @section Scripts {
+    <!-- Include jQuery and setup auto-refresh for live vote updates -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
+        // AJAX call to fetch updated election statistics
         function refreshLiveStats() {
             $.get('@Url.Action("UserViewElectionStats", "UserView", new { eventId = Model.EventId })', function (data) {
                 if (!data) return;
 
+                // Update total voters, votes cast, and turnout
                 $('#eligibleVoters').text(data.totalVoters);
                 $('#votesCast').text(data.votesCast);
                 $('#turnoutPercent').text(data.voterTurnoutPercent.toFixed(2));
 
+                // Rebuild candidate list with updated vote counts
                 let html = '';
                 data.positions.forEach(position => {
                     html += `<div class="mb-5">
@@ -91,6 +106,7 @@
                                     <i class="bi bi-person-badge me-2"></i>${position.positionTitle}
                                 </h5>`;
 
+                    // Sort candidates by votes and display vote bars
                     position.candidates.sort((a, b) => b.voteCount - a.voteCount).forEach(candidate => {
                         let percent = data.totalVoters === 0 ? 0 : (candidate.voteCount / data.totalVoters) * 100;
                         html += `
@@ -111,12 +127,14 @@
                     html += `</div>`;
                 });
 
+                // Replace old position container with new HTML
                 $('#positionsContainer').html(html);
             });
         }
 
+        // Automatically refresh stats every 10 seconds
         $(document).ready(function () {
-            setInterval(refreshLiveStats, 10000); // Refresh every 10s
+            setInterval(refreshLiveStats, 10000); // Refresh interval: 10 seconds
         });
     </script>
 }

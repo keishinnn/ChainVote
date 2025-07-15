@@ -10,7 +10,7 @@ namespace ChainVote.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        // DbSets for your entities
+        // DbSets for entities
         public DbSet<ApplicationUser> ApplicationUser { get; set; }
         public DbSet<AdminAccount> AdminAccount { get; set; }
         public DbSet<CandidatesData> CandidatesData { get; set; }

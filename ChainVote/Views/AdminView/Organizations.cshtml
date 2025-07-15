@@ -153,7 +153,7 @@
 @section Scripts {
 
     <script>
-        // Define the standard positions for CSG, USG, and Class Officer election types
+        // Define the standard position lists for each election type
         const csgPositions = [
             "President", "Vice President", "Senator",
             "Communication Secretary", "Information Secretary", "Treasurer", "Auditor"
@@ -169,21 +169,22 @@
             "President", "Vice President", "Secretary", "Treasurer", "Auditor", "P.I.O", "Business Manager"
         ];
 
-
-        // Handle change in election type dropdown
+        // Listen for changes on the election type dropdown
         document.getElementById("electionTypeSelect").addEventListener("change", function () {
             const value = this.value;
-            const predefinedContainer = document.getElementById("predefinedPositions"); // Container for predefined positions
-            const list = document.getElementById("positionsList"); // List element to render predefined positions
+            const predefinedContainer = document.getElementById("predefinedPositions"); // Container holding predefined positions list
+            const list = document.getElementById("positionsList"); // UL element to display positions
 
-            list.innerHTML = ""; // Clear existing list
+            // Clear any previously displayed positions and hide the container by default
+            list.innerHTML = "";
             predefinedContainer.classList.add("d-none");
 
+            // Show and populate positions only if the selected election type is one of the predefined categories
             if (value === "CampusGovernment" || value === "UniversityGovernment" || value === "ClassOfficer") {
-                // Show predefined positions
                 predefinedContainer.classList.remove("d-none");
-                let positions = [];
 
+                // Select the appropriate position array based on election type
+                let positions = [];
                 switch (value) {
                     case "CampusGovernment":
                         positions = csgPositions;
@@ -196,23 +197,26 @@
                         break;
                 }
 
-                // Dynamically create list items with assign buttons
+                // Create list items for each position with an assign candidate button
                 positions.forEach(pos => {
                     const li = document.createElement("li");
                     li.className = "list-group-item d-flex justify-content-between align-items-center";
-                    li.dataset.position = pos; // store position name
+                    li.dataset.position = pos; // Store position name as data attribute
 
                     const span = document.createElement("span");
                     span.textContent = pos;
 
+                    // Placeholder for showing assigned candidate name (initially empty)
                     const candidateInfo = document.createElement("small");
                     candidateInfo.className = "text-success ms-2 assigned-candidate";
 
+                    // Button to open the candidate assignment modal for this position
                     const button = document.createElement("button");
                     button.type = "button";
                     button.className = "btn btn-sm btn-link assign-btn";
                     button.onclick = () => openAssignCandidateModal(pos, li, organizationId);
 
+                    // Compose the list item elements
                     span.appendChild(candidateInfo);
                     li.appendChild(span);
                     li.appendChild(button);
@@ -222,53 +226,58 @@
         });
     </script>
 
-
-
     <script>
-        // Populate the Delete Confirmation Modal with data before it's shown
+        // Prepare the Delete Confirmation Modal by injecting organization-specific data dynamically
         const modal = document.getElementById('deleteConfirmationModal');
         modal.addEventListener('show.bs.modal', function (event) {
+            // Button that triggered the modal
             const button = event.relatedTarget;
+
+            // Extract organization ID and name from data attributes
             const organizationId = button.getAttribute('data-organization-id');
             const organizationName = button.getAttribute('data-organization-name');
 
-            // Update modal content
+            // Update modal display text with organization name
             const organizationNameSpan = modal.querySelector('#electionName');
-            const deleteForm = modal.querySelector('#deleteElectionForm');
             organizationNameSpan.textContent = organizationName;
+
+            // Update form action URL to include the selected organization's ID for deletion
+            const deleteForm = modal.querySelector('#deleteElectionForm');
             deleteForm.action = '/OrganizationsData/DeleteOrganization/' + organizationId;
         });
     </script>
 
     <script>
-        // Show Edit Partylist modal and populate it with organization data
+        // Open the Edit Partylist modal and load organization data including positions asynchronously
         async function openEditOrganizationModal(orgId) {
             try {
+                // Fetch organization data with positions from server
                 const response = await fetch(`/OrganizationsData/GetOrganizationWithPositions/${orgId}`);
                 if (!response.ok) throw new Error("Failed to fetch organization data.");
 
                 const data = await response.json();
 
-                // Populate modal form fields
+                // Fill modal input fields with received data
                 document.getElementById("editPartylistId").value = data.id;
                 document.getElementById("editPartylistName").value = data.name;
                 document.getElementById("editElectionType").value = data.electionType;
 
-                // Render position list
+                // Render the list of positions inside the modal
                 const positionsList = document.getElementById("editPositionsList");
                 positionsList.innerHTML = "";
                 data.positions.forEach(pos => {
                     const li = document.createElement("li");
                     li.className = "list-group-item";
-                    li.textContent = pos.title ?? pos;
+                    li.textContent = pos.title ?? pos; // Support both object or string position formats
                     positionsList.appendChild(li);
                 });
 
-                // Display the modal
+                // Show the Bootstrap modal for editing
                 const modal = new bootstrap.Modal(document.getElementById("editPartylistModal"));
                 modal.show();
 
             } catch (error) {
+                // Handle errors gracefully with console log and alert
                 console.error(error);
                 alert("An error occurred while loading the organization details.");
             }
@@ -276,27 +285,32 @@
     </script>
 
     <script>
-          document.addEventListener("DOMContentLoaded", function () {
+        // Handle submission of the partylist creation form with predefined positions only
+        document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById("partylistForm");
 
             form.addEventListener("submit", async function (e) {
-                e.preventDefault();
+                e.preventDefault(); // Prevent default form submit
 
+                // Collect form input values
                 const name = form.querySelector('input[name="Name"]').value;
                 const eventId = form.querySelector('select[name="EventId"]').value;
                 const electionType = form.querySelector('select[name="ElectionType"]').value;
 
-                // ✅ Only collect predefined positions (no candidate linking)
+                // Collect all predefined position names from the displayed list
                 const positionsListItems = document.querySelectorAll("#positionsList li");
                 const predefinedPositions = Array.from(positionsListItems).map(li => li.dataset.position);
+
+                // Prepare data payload for server
                 const payload = {
                     name: name,
                     eventId: parseInt(eventId),
                     electionType: electionType,
-                    positions: predefinedPositions // ✅ Only position names
+                    positions: predefinedPositions
                 };
 
                 try {
+                    // Send POST request with JSON payload to create a new partylist with positions
                     const response = await fetch('/OrganizationsData/CreateWithPositions', {
                         method: 'POST',
                         headers: {
@@ -307,19 +321,25 @@
                     });
 
                     if (response.ok) {
+                        // Success feedback and UI reset
                         alert("Partylist created successfully!");
                         form.reset();
                         document.getElementById("positionsList").innerHTML = "";
                         document.getElementById("predefinedPositions").classList.add("d-none");
 
+                        // Hide the modal after successful creation
                         const modal = bootstrap.Modal.getInstance(document.getElementById("addPartylistModal"));
                         modal.hide();
+
+                        // Reload the page to reflect new data
                         window.location.reload();
                     } else {
+                        // Handle server error response
                         const error = await response.text();
                         alert("Failed to create partylist: " + error);
                     }
                 } catch (err) {
+                    // Catch any network or unexpected errors
                     console.error(err);
                     alert("An error occurred. Please try again.");
                 }
@@ -327,27 +347,30 @@
         });
     </script>
 
-
-  
     <script>
-        // script for fetching awaiting election event and to populate the dropdown for creating an organization
+        // On document ready, load available election events for dropdown selection
         $(document).ready(function () {
             loadElectionEvents();
         });
 
+        // Fetch available election events from server and populate dropdown
         function loadElectionEvents() {
             $.ajax({
-                url: '/OrganizationsData/GetAvailableElectionEvents', // Update to match your route
+                url: '/OrganizationsData/GetAvailableElectionEvents', // API endpoint to get election events
                 type: 'GET',
                 success: function (data) {
                     const select = $('#eventSelect');
+
+                    // Clear previous options and add placeholder option
                     select.empty().append('<option selected disabled value="">-- Select Election Event --</option>');
 
+                    // Add each election event as an option element
                     data.forEach(event => {
                         select.append(`<option value="${event.id}">${event.eventName}</option>`);
                     });
                 },
                 error: function () {
+                    // Alert user if fetching election events fails
                     alert('Failed to load election events.');
                 }
             });
@@ -355,4 +378,5 @@
     </script>
 
 }
+
 

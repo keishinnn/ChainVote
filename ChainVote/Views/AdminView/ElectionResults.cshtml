@@ -6,6 +6,7 @@
 }
 
 <div class="container mt-4">
+    <!-- Election Event Header with Title and Dates -->
     <div class="text-center mb-5">
         <h2 class="fw-bold">@Model.EventTitle</h2>
         <p class="text-muted">Started on <strong>@Model.EventStartDate.ToString("MMMM dd, yyyy")</strong></p>
@@ -13,6 +14,7 @@
         <hr />
     </div>
 
+    <!-- Summary Cards: Total Eligible Voters, Votes Cast, and Voter Turnout Percentage -->
     <div class="row justify-content-center mb-5">
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
@@ -40,18 +42,27 @@
         </div>
     </div>
 
+    <!-- Loop through each position to display candidates and their results -->
     @foreach (var position in Model.Positions)
     {
+        // Determine the highest vote count for this position
         var topVote = position.Candidates.Max(c => c.VoteCount);
 
         <div class="mb-5">
             <h4 class="mb-3 text-primary">@position.PositionTitle</h4>
+
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
+                    <!-- List candidates ordered by vote count descending -->
                     @foreach (var candidate in position.Candidates.OrderByDescending(c => c.VoteCount))
                     {
+                        // Check if the candidate is a winner (has highest votes > 0)
                         var isWinner = candidate.VoteCount == topVote && topVote > 0;
+
+                        // Calculate percentage of total votes cast this candidate received
                         var percent = Model.VotesCast == 0 ? 0 : ((double)candidate.VoteCount / Model.VotesCast) * 100;
+
+                        // Set progress bar color: primary for winner, secondary otherwise
                         var progressBarClass = isWinner ? "bg-primary" : "bg-secondary";
 
                         <div class="mb-3">
@@ -65,6 +76,8 @@
                                 </strong>
                                 <span class="text-muted small">@candidate.VoteCount votes (@percent.ToString("F1")%)</span>
                             </div>
+
+                            <!-- Visual progress bar showing vote percentage -->
                             <div class="progress" style="height: 24px;">
                                 <div class="progress-bar @progressBarClass" role="progressbar"
                                      style="width: @percent.ToString("F2")%;" aria-valuenow="@percent.ToString("F0")"
@@ -79,6 +92,7 @@
         </div>
     }
 
+    <!-- Back button to return to the admin dashboard -->
     <div class="text-end mt-4">
         <a asp-controller="AdminView" asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
     </div>

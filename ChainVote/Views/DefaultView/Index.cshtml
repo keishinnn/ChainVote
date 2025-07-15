@@ -3,31 +3,38 @@
     Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
 }
 
+<!-- Hero Section: Main introduction with call-to-action buttons -->
 <section class="hero-section text-center text-white bg-primary py-5">
     <div class="container">
+        <!-- Main heading -->
         <h1 class="display-3 fw-bold mb-3 animate-fadein">ChainVote Voting System</h1>
+        <!-- Subheading describing the system -->
         <p class="lead mb-4 animate-slideup">
             Secure, User-Friendly, and Built for Academic Elections
         </p>
+        <!-- Buttons for login and registration -->
         <a href="/Account/Login" class="btn btn-light btn-lg me-2">Start Voting</a>
         <a href="/Account/Register" class="btn btn-outline-light btn-lg">Get Verified</a>
     </div>
 </section>
 
-<!-- Features Section -->
+<!-- Features Section: Highlights key features of the voting system -->
 <section class="features-section py-5 bg-light">
     <div class="container">
         <div class="row text-center">
+            <!-- Feature 1: Security -->
             <div class="col-md-4 mb-4 animate-fadein">
                 <i class="bi bi-lock display-4 text-primary mb-3"></i>
                 <h5>Secure Voting</h5>
                 <p>Votes are protected and monitored to ensure fairness and integrity.</p>
             </div>
+            <!-- Feature 2: User Roles -->
             <div class="col-md-4 mb-4 animate-fadein" style="animation-delay: 0.2s">
                 <i class="bi bi-person-check display-4 text-primary mb-3"></i>
                 <h5>User Roles</h5>
                 <p>Separate login access for Admin and Voter accounts.</p>
             </div>
+            <!-- Feature 3: Analytics -->
             <div class="col-md-4 mb-4 animate-fadein" style="animation-delay: 0.4s">
                 <i class="bi bi-graph-up display-4 text-primary mb-3"></i>
                 <h5>Real-Time Analytics</h5>
@@ -37,14 +44,17 @@
     </div>
 </section>
 
-<!-- About Section -->
+<!-- About Section: Overview of the system's purpose and benefits -->
 <section class="about-section py-5 text-center">
     <div class="container">
+        <!-- Section heading -->
         <h2 class="mb-4">About the System</h2>
+        <!-- Description paragraph -->
         <p class="lead text-muted">
             This project is designed to modernize school and classroom elections by providing an efficient,
             transparent, and easy-to-use digital voting platform for students and administrators.
         </p>
+        <!-- Link to detailed about page -->
         <a href="/DefaultView/About" class="btn btn-outline-primary mt-3">Learn More</a>
     </div>
 </section>

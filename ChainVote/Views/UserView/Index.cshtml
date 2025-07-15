@@ -3,27 +3,50 @@
     Layout = "~/Views/Shared/_UserViewLayout.cshtml";
 }
 
+<!-- Main container for the home page content -->
 <div class="container py-2 mt-4">
-    <h2 class="mb-4 fw-bold text-dark"><i class="bi bi-bar-chart-line me-2"></i>Elections Statistics</h2>
 
-    <!-- In Progress Elections -->
-    <h4 class="text-primary mb-3"><i class="bi bi-clock-history me-2"></i>In Progress</h4>
+    <!-- Page heading with icon -->
+    <h2 class="mb-4 fw-bold text-dark">
+        <i class="bi bi-bar-chart-line me-2"></i>Elections Statistics
+    </h2>
+
+    <!-- Section for elections that are currently ongoing -->
+    <h4 class="text-primary mb-3">
+        <i class="bi bi-clock-history me-2"></i>In Progress
+    </h4>
+
+    <!-- Card grid layout for ongoing elections -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
         @foreach (var summary in Model.InProgressElections)
         {
+            // Get the election event details from the summary object
             var eventItem = summary.Event;
+
             <div class="col">
+                <!-- Election card component -->
                 <div class="card border-0 shadow-sm h-100 animate-fadein">
                     <div class="card-body">
+                        <!-- Election name -->
                         <h5 class="card-title text-primary">@eventItem.EventName</h5>
-                        <p class="text-muted mb-1"><i class="bi bi-calendar-event me-1"></i>Started: @eventItem.StartDate.ToString("MMMM dd, yyyy")</p>
-                        <span class="badge bg-success mb-3"><i class="bi bi-play-circle me-1"></i>In Progress</span>
 
+                        <!-- Start date of the election -->
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-calendar-event me-1"></i>Started: @eventItem.StartDate.ToString("MMMM dd, yyyy")
+                        </p>
+
+                        <!-- Badge indicating the election is ongoing -->
+                        <span class="badge bg-success mb-3">
+                            <i class="bi bi-play-circle me-1"></i>In Progress
+                        </span>
+
+                        <!-- Placeholder for live stats (populated via JavaScript) -->
                         <div id="electionStatsContainer-@eventItem.Id" class="border-top pt-3">
                             <h6 class="text-secondary fw-semibold mb-2">Live Stats</h6>
-                            <!-- Dynamic content -->
+                            <!-- Dynamic content will be injected here -->
                         </div>
 
+                        <!-- Button to navigate to election statistics page -->
                         <div class="text-end mt-3">
                             <a asp-controller="UserView" asp-action="UserViewElectionStats" asp-route-eventId="@eventItem.Id" class="btn btn-outline-primary btn-sm rounded-pill">
                                 View Details <i class="bi bi-arrow-right-circle ms-1"></i>
@@ -35,19 +58,36 @@
         }
     </div>
 
-    <!-- Completed Elections -->
-    <h4 class="text-secondary mb-3"><i class="bi bi-check2-circle me-2"></i>Completed</h4>
+    <!-- Section for completed elections -->
+    <h4 class="text-secondary mb-3">
+        <i class="bi bi-check2-circle me-2"></i>Completed
+    </h4>
+
+    <!-- Card grid layout for completed elections -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
         @foreach (var summary in Model.CompletedElections)
         {
+            // Get the election event details from the summary object
             var eventItem = summary.Event;
+
             <div class="col">
+                <!-- Election card component -->
                 <div class="card border border-secondary shadow-sm h-100 animate-fadein">
                     <div class="card-body">
+                        <!-- Election name -->
                         <h5 class="card-title text-dark">@eventItem.EventName</h5>
-                        <p class="text-muted mb-1"><i class="bi bi-calendar-check me-1"></i>Ended: @eventItem.EndDate.ToString("MMMM dd, yyyy")</p>
-                        <span class="badge bg-secondary mb-3"><i class="bi bi-check-circle me-1"></i>Completed</span>
 
+                        <!-- End date of the election -->
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-calendar-check me-1"></i>Ended: @eventItem.EndDate.ToString("MMMM dd, yyyy")
+                        </p>
+
+                        <!-- Badge indicating the election is completed -->
+                        <span class="badge bg-secondary mb-3">
+                            <i class="bi bi-check-circle me-1"></i>Completed
+                        </span>
+
+                        <!-- Button to view final election results -->
                         <div class="text-end mt-3">
                             <a asp-controller="UserView" asp-action="UserViewElectionResults" asp-route-eventId="@eventItem.Id" class="btn btn-outline-success btn-sm rounded-pill">
                                 View Results <i class="bi bi-bar-chart-line ms-1"></i>
@@ -61,13 +101,20 @@
 </div>
 
 @section Scripts {
+    <!-- Load jQuery library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
     <script>
         $(document).ready(function () {
+            // For each container with election stats, fetch live data
             $('[id^="electionStatsContainer-"]').each(function () {
-                const containerId = $(this).attr('id');
-                const eventId = containerId.split('-')[1];
+                const containerId = $(this).attr('id'); // e.g. "electionStatsContainer-5"
+                const eventId = containerId.split('-')[1]; // Extract eventId
+
+                // Fetch initial stats when page loads
                 fetchElectionStats(eventId);
+
+                // Set an interval to refresh stats every 10 seconds
                 setInterval(() => fetchElectionStats(eventId), 10000);
             });
         });

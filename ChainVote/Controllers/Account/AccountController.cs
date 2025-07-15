@@ -37,48 +37,62 @@ namespace ChainVote.Controllers
             if (!ModelState.IsValid)
                 return View(loginViewModel);
 
-            // Allow login using Email or Student ID
+            // Try to find user by email or username (StudentId)
             ApplicationUser user = await _userManager.FindByEmailAsync(loginViewModel.Username);
             if (user == null)
-                user = await _userManager.FindByNameAsync(loginViewModel.Username); // StudentId is treated as UserName
+                user = await _userManager.FindByNameAsync(loginViewModel.Username);
 
             if (user != null)
             {
-                // Check if password matches
-                var passwordCheck = await _userManager.CheckPasswordAsync(user, loginViewModel.Password);
-                if (passwordCheck)
-                {
-                    var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
-                    if (result.Succeeded)
-                    {
-                        // Determine the user's role
-                        var roles = await _userManager.GetRolesAsync(user);
+                // Attempt sign-in with lockout on failure enabled
+                var result = await _signInManager.PasswordSignInAsync(
+                    user,
+                    loginViewModel.Password,
+                    isPersistent: false,
+                    lockoutOnFailure: true);
 
-                        if (roles.Contains("Admin"))
-                        {
-                            // Redirect to Admin dashboard
-                            return RedirectToAction("Dashboard", "AdminView");
-                        }
-                        else if (roles.Contains("Voter"))
-                        {
-                            // Redirect to Voter election page
-                            return RedirectToAction("UserViewElections", "UserView");
-                        }
-                        else
-                        {
-                            TempData["Error"] = "No role assigned to this account.";
-                            return View(loginViewModel);
-                        }
+                if (result.Succeeded)
+                {
+                    // Successful login — get user roles
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    if (roles.Contains("Admin"))
+                    {
+                        return RedirectToAction("Dashboard", "AdminView");
+                    }
+                    else if (roles.Contains("Voter"))
+                    {
+                        return RedirectToAction("UserViewElections", "UserView");
+                    }
+                    else
+                    {
+                        TempData["Error"] = "No role assigned to this account.";
+                        return View(loginViewModel);
                     }
                 }
+                else if (result.IsLockedOut)
+                {
+                    // User is locked out
+                    var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+                    var remaining = lockoutEnd.HasValue
+                        ? (lockoutEnd.Value.UtcDateTime - DateTime.UtcNow).TotalMinutes
+                        : 0;
 
-                TempData["Error"] = "Wrong credentials.";
-                return View(loginViewModel);
+                    TempData["Error"] = $"Your account is locked due to multiple failed login attempts. Please try again in {Math.Ceiling(remaining)} minute(s).";
+                    return View(loginViewModel);
+                }
+                else
+                {
+                    // Invalid credentials (wrong password)
+                    TempData["Error"] = "Wrong credentials.";
+                    return View(loginViewModel);
+                }
             }
 
             TempData["Error"] = "User not found.";
             return View(loginViewModel);
         }
+
 
         // GET: Account/Register
         [HttpGet]

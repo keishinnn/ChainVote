@@ -5,6 +5,7 @@
     Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
 }
 
+<!-- Display error message if TempData contains an error -->
 @if (TempData["Error"] != null)
 {
     <div class="col-md-12 alert alert-danger">
@@ -12,56 +13,60 @@
     </div>
 }
 
+<!-- Display success message if TempData contains success -->
 @if (TempData["Success"] != null)
 {
-    <div class="col-md-12 alert alert-danger">
-        <span> - @TempData["Success"]</span>
+    <div class="col-md-12 alert alert-success">
+        <span>@TempData["Success"]</span>
     </div>
 }
 
+<!-- Main registration container -->
 <div class="register-container">
     <h2 class="text-center mb-4">Register</h2>
 
+    <!-- Registration form for admin account -->
     <form method="post" asp-action="RegisterAdmin" asp-controller="Account">
         @Html.AntiForgeryToken()
 
-        <!-- Email Field -->
+        <!-- Input for email -->
         <div class="mb-3">
             <label asp-for="Email" class="form-label">Email</label>
             <input asp-for="Email" class="form-control" placeholder="Enter your email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
-        <!-- Password Field -->
+        <!-- Input for password -->
         <div class="mb-3">
             <label asp-for="Password" class="form-label">Password</label>
             <input asp-for="Password" class="form-control" placeholder="Enter your password" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
-        <!-- Confirm Password Field -->
+        <!-- Input for confirm password -->
         <div class="mb-3">
             <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
             <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter your password" />
             <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
 
-        <!-- Role Selection (Optional for now) -->
+        <!-- Hidden field to assign the admin role -->
         <input type="hidden" asp-for="Role" value="Admin" />
 
-        <!-- Register Button -->
+        <!-- Submit button for registration -->
         <button type="submit" class="btn btn-success w-100">Register</button>
     </form>
 
-    <!-- Error Message -->
+    <!-- Display model validation message from controller -->
     <p class="text-danger mt-3">@ViewBag.Message</p>
 
-    <!-- Login Link -->
+    <!-- Link to login page -->
     <div class="text-center mt-2">
         <a href="/Account/Login">Already have an account? Login</a>
     </div>
 </div>
 
+<!-- Load validation scripts and other required JS -->
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/tooltip-init.js"></script>

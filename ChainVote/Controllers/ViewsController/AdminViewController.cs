@@ -21,7 +21,6 @@ namespace ChainVote.Controllers.ViewsController
             _logger = logger;
         }
 
-        // 1. Dashboard
         public IActionResult Dashboard()
         {
             return RedirectToAction("Dashboard", "ElectionStats");
@@ -57,28 +56,31 @@ namespace ChainVote.Controllers.ViewsController
         {
             return View();
         }
+
+        // Render the VoteRecords view with a list of vote records from the database
         public IActionResult VoteRecords()
         {
+            // Fetch detailed vote records including related entities
             var voteRecords = FetchVoteRecords();
             return View(voteRecords);
         }
 
-        // 7. Logout
+        // Render the Logout view
         public IActionResult Logout()
         {
-            // Logic to sign out the user (optional)
             return View("Logout");
         }
 
+        // Helper method to fetch vote records with related voter, candidate, position, organization, and event data
         private List<VoteRecordViewModel> FetchVoteRecords()
         {
             var records = _context.VoteRecords
-                .Include(v => v.Voter)
+                .Include(v => v.Voter) 
                 .Include(v => v.Candidate)
-                    .ThenInclude(c => c.ApplicationUser)
+                    .ThenInclude(c => c.ApplicationUser) 
                 .Include(v => v.Candidate.Position)
-                    .ThenInclude(p => p.Organization)
-                        .ThenInclude(o => o.Event)
+                    .ThenInclude(p => p.Organization)    
+                        .ThenInclude(o => o.Event)       
                 .Select(v => new VoteRecordViewModel
                 {
                     VoterEmail = v.Voter.Email,
@@ -93,8 +95,10 @@ namespace ChainVote.Controllers.ViewsController
             return records;
         }
 
+        // Display a list of users who have vote records, allowing admin to select users to delete votes from
         public IActionResult DeleteUserVotesView()
         {
+            // Group votes by voter and select unique users with votes
             var usersWithVotes = _context.VoteRecords
                 .Include(v => v.Voter)
                 .GroupBy(v => v.Voter.Id)
@@ -109,9 +113,11 @@ namespace ChainVote.Controllers.ViewsController
             return View(usersWithVotes);
         }
 
+        // Retrieve distinct election events that a specific user has voted in
         [HttpGet]
         public IActionResult GetUserElectionEvents(string userId)
         {
+            // Query vote records to find all unique events the user has participated in
             var elections = _context.VoteRecords
                 .Where(v => v.Voter.Id == userId)
                 .Select(v => new
@@ -121,6 +127,7 @@ namespace ChainVote.Controllers.ViewsController
                 })
                 .Distinct()
                 .ToList()
+                // Map events to SelectListItem for dropdown use in the view
                 .Select(e => new SelectListItem
                 {
                     Value = e.Id.ToString(),
@@ -128,12 +135,15 @@ namespace ChainVote.Controllers.ViewsController
                 })
                 .ToList();
 
+            // Return the events as JSON
             return Json(elections);
         }
 
+        // Delete all votes cast by a user in a specific election event
         [HttpPost]
         public IActionResult DeleteUserVotes(string userId, int eventId)
         {
+            // Find all vote records matching the user and event
             var votes = _context.VoteRecords
                 .Include(v => v.Candidate)
                     .ThenInclude(c => c.Position)
@@ -141,9 +151,11 @@ namespace ChainVote.Controllers.ViewsController
                 .Where(v => v.Voter.Id == userId && v.Candidate.Position.Organization.EventId == eventId)
                 .ToList();
 
+            // Remove the retrieved vote records from the database
             _context.VoteRecords.RemoveRange(votes);
             _context.SaveChanges();
 
+            // Provide feedback message for the successful operation
             TempData["Message"] = "User votes deleted successfully.";
             return RedirectToAction("DeleteUserVotesView");
         }

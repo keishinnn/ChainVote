@@ -425,11 +425,14 @@
 </div>
 
 @section Scripts {
+    <!-- Load jQuery and validation libraries -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
 
     <script>
+        // Handle the showing event of the delete confirmation modal
+        // Populate modal with election name and update form action URL dynamically
         const modal = document.getElementById('deleteConfirmationModal');
         modal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
@@ -441,16 +444,18 @@
 
             electionNameSpan.textContent = electionName;
 
-            // Update form action to include the ID
+            // Set the form's action URL to include the election ID for deletion
             deleteForm.action = '/EventsData/DeleteElection/' + electionId;
         });
     </script>
 
     <script>
+        // Open the modal for editing allowed voters and load data via AJAX
         function openEditAllowedVotersModal(electionId) {
             $('#editAllowedVotersModal').modal('show');
             $('#editElectionId').val(electionId);
 
+            // Fetch allowed voters data for the given election from the server
             $.ajax({
                 url: '/EventsData/GetAllowedVotersData',
                 type: 'GET',
@@ -463,7 +468,7 @@
                         selectedCourses, selectedYearLevels, selectedSections
                     } = data;
 
-                    // ✅ Pass correct field names to match controller parameters
+                    // Populate dropdown checkboxes for courses, years, and sections
                     populateDropdown('editCourseDropdown', 'editCourseOption', 'Courses', predefinedCourses, selectedCourses);
                     populateDropdown('editYearDropdown', 'editYearOption', 'YearLevels', predefinedYearLevels, selectedYearLevels);
                     populateDropdown('editSectionDropdown', 'editSectionOption', 'Sections', predefinedSections, selectedSections);
@@ -474,8 +479,10 @@
             });
         }
 
+        // Populate checkbox list inside a dropdown with items and mark selected items checked
         function populateDropdown(containerId, optionClass, name, items, selectedItems) {
             const container = $('#' + containerId);
+            // Remove existing options before adding new ones
             container.find('li.' + optionClass).remove();
 
             if (!Array.isArray(items) || items.length === 0) {
@@ -485,6 +492,7 @@
 
             selectedItems = selectedItems || [];
 
+            // Create a checkbox item for each option in the list
             items.forEach(item => {
                 if (!item) return;
 
@@ -500,6 +508,7 @@
             });
         }
 
+        // Select or deselect all checkboxes in a dropdown based on the "Select All" checkbox state
         function selectAllOptions(selectAllCheckbox, dropdownId) {
             const dropdown = $('#' + dropdownId);
             dropdown.find('input[type="checkbox"]').each(function () {
@@ -507,23 +516,21 @@
             });
         }
 
-        // ✅ Change from submit event on a button (invalid) to click event
+        // Open the confirmation modal for editing allowed voters on button click (not form submit)
         document.getElementById("openConfirmAllowedVotersModalBtn").addEventListener("click", function (e) {
-            e.preventDefault(); // Prevent form from submitting right away
+            e.preventDefault(); // Prevent form's default submit action
             $('#confirmAllowedVotersModal').modal('show');
         });
 
-        // ✅ Submit form only after user confirms
+        // When the user confirms, hide the confirmation modal and submit the form
         document.getElementById("submitEditAllowedVotersBtn").addEventListener("click", function () {
-            $('#confirmAllowedVotersModal').modal('hide'); // Optional
+            $('#confirmAllowedVotersModal').modal('hide');
             document.getElementById("editAllowedVotersForm").submit();
         });
     </script>
 
-
-
-    <!-- Script for Checkbox Toggle -->
     <script>
+        // Filter dropdown checkbox options based on text input (search)
         function filterOptions(inputElement, className) {
             const filter = inputElement.value.toUpperCase();
             const options = document.querySelectorAll(`.${className}`);
@@ -534,16 +541,19 @@
             });
         }
 
+        // Setup "Select All" checkbox toggle behavior for a dropdown list of checkboxes
         function setupDropdownToggle(allId, className) {
             const allBox = document.getElementById(allId);
             const checkboxes = document.querySelectorAll(`.${className} input[type="checkbox"]`);
 
             if (!allBox) return;
 
+            // When "Select All" is changed, check/uncheck all options accordingly
             allBox.addEventListener('change', function () {
                 checkboxes.forEach(cb => cb.checked = allBox.checked);
             });
 
+            // When individual checkboxes change, update "Select All" checkbox state
             checkboxes.forEach(cb => {
                 cb.addEventListener('change', function () {
                     if (!cb.checked) {
@@ -555,7 +565,7 @@
             });
         }
 
-        // Initialize all dropdowns
+        // Initialize the "Select All" checkbox functionality for all dropdowns after DOM is loaded
         document.addEventListener("DOMContentLoaded", () => {
             setupDropdownToggle('courseAll', 'courseOption');
             setupDropdownToggle('yearAll', 'yearOption');
@@ -563,8 +573,8 @@
         });
     </script>
 
-    <!-- Script Confirmation on Creating Election -->
     <script>
+        // Submit the create election form when the confirm button is clicked
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('confirmCreateElectionBtn').addEventListener('click', function () {
                 const form = document.getElementById('createElectionFormElement');
@@ -576,7 +586,7 @@
             });
         });
     </script>
-
 }
+
 
 

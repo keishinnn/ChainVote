@@ -6,28 +6,33 @@
 }
 
 <div class="container mt-3 mb-5 animate-fadein">
+
+    <!-- Header section displaying the event title and start date -->
     <div class="bg-white shadow rounded p-4 mb-4">
         <h2 class="fw-bold text-primary mb-2"><i class="bi bi-bar-chart-line me-2"></i>@Model.EventTitle</h2>
         <p class="text-muted">Started on <i class="bi bi-calendar-event me-1"></i>@Model.EventStartDate.ToString("MMMM dd, yyyy")</p>
     </div>
 
-    <!-- Total Participation -->
+    <!-- Summary section showing total participation stats -->
     <div class="bg-light border rounded p-4 mb-5 shadow-sm">
         <h5 class="text-dark fw-semibold mb-3"><i class="bi bi-people-fill me-2"></i>Total Participation</h5>
         <div class="row g-3">
             <div class="col-md-4">
+                <!-- Display total eligible voters -->
                 <div class="p-3 bg-white rounded shadow-sm text-center">
                     <h6 class="text-muted small">Eligible Voters</h6>
                     <div class="fs-4 fw-bold text-dark" id="eligibleVoters">@Model.TotalVoters</div>
                 </div>
             </div>
             <div class="col-md-4">
+                <!-- Display total votes cast so far -->
                 <div class="p-3 bg-white rounded shadow-sm text-center">
                     <h6 class="text-muted small">Votes Cast</h6>
                     <div class="fs-4 fw-bold text-primary" id="votesCast">@Model.VotesCast</div>
                 </div>
             </div>
             <div class="col-md-4">
+                <!-- Display voter turnout percentage -->
                 <div class="p-3 bg-white rounded shadow-sm text-center">
                     <h6 class="text-muted small">Voter Turnout</h6>
                     <div class="fs-4 fw-bold text-success" id="turnoutPercent">@Model.VoterTurnoutPercent.ToString("F2")%</div>
@@ -36,22 +41,26 @@
         </div>
     </div>
 
-    <!-- Positions and Candidates -->
+    <!-- Section showing vote counts for each position and its candidates -->
     <div id="positionsContainer">
         @foreach (var position in Model.Positions)
         {
             <div class="mb-5 position-block" data-position="@position.PositionTitle">
+                <!-- Position title header -->
                 <h5 class="fw-semibold border-bottom pb-2 mb-4 text-dark"><i class="bi bi-person-badge me-2"></i>@position.PositionTitle</h5>
 
                 @foreach (var candidate in position.Candidates.OrderByDescending(c => c.VoteCount))
                 {
+                    // Calculate candidate's vote percentage relative to total voters
                     var percent = Model.TotalVoters == 0 ? 0 : ((double)candidate.VoteCount / Model.TotalVoters) * 100;
 
                     <div class="mb-3">
+                        <!-- Candidate name and vote count -->
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <strong class="text-dark">@candidate.CandidateName</strong>
                             <span class="text-muted small">@candidate.VoteCount votes</span>
                         </div>
+                        <!-- Visual progress bar representing vote percentage -->
                         <div class="progress rounded" style="height: 24px;">
                             <div class="progress-bar bg-gradient-success" role="progressbar"
                                  style="width: @percent.ToString("F2")%;" aria-valuenow="@percent.ToString("F0")"
@@ -65,7 +74,7 @@
         }
     </div>
 
-    <!-- Back Button -->
+    <!-- Navigation button to go back to the elections list -->
     <div class="text-end mt-4">
         <a asp-controller="DefaultView" asp-action="DefaultViewElections" class="btn btn-outline-secondary rounded-pill px-4">
             <i class="bi bi-arrow-left-circle me-2"></i>Back to List
@@ -76,14 +85,17 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
+        // Function to refresh the live voting statistics by fetching updated data via AJAX
         function refreshLiveStats() {
-            $.get('@Url.Action("DefaultViewElectionStats", "DefualtView", new { eventId = Model.EventId })', function (data) {
+            $.get('@Url.Action("DefaultViewElectionStats", "DefaultView", new { eventId = Model.EventId })', function (data) {
                 if (!data) return;
 
+                // Update total participation counts in the UI
                 $('#eligibleVoters').text(data.totalVoters);
                 $('#votesCast').text(data.votesCast);
                 $('#turnoutPercent').text(data.voterTurnoutPercent.toFixed(2));
 
+                // Build the HTML for positions and candidates dynamically based on the response
                 let html = '';
                 data.positions.forEach(position => {
                     html += `<div class="mb-5">
@@ -101,7 +113,7 @@
                                 </div>
                                 <div class="progress rounded" style="height: 24px;">
                                     <div class="progress-bar bg-gradient-success" role="progressbar"
-                                         style="width: ${percent.toFixed(2)}%;">
+                                         style="width: ${percent.toFixed(2)}%; ">
                                         ${percent.toFixed(1)}%
                                     </div>
                                 </div>
@@ -111,12 +123,14 @@
                     html += `</div>`;
                 });
 
+                // Replace the existing positions container with the updated HTML
                 $('#positionsContainer').html(html);
             });
         }
 
+        // Set up a timer to refresh the stats every 10 seconds after the page loads
         $(document).ready(function () {
-            setInterval(refreshLiveStats, 10000); // Refresh every 10s
+            setInterval(refreshLiveStats, 10000); // 10000 milliseconds = 10 seconds
         });
     </script>
 }

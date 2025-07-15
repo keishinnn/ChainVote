@@ -5,10 +5,11 @@ using ChainVote.Models.AccountViewModels;
 using ChainVote.Data;
 using System.Threading.Tasks;
 using ChainVote.Models.Identity;
+using System.Linq;
 
 namespace ChainVote.Controllers
 {
-    [Authorize ()]
+    [Authorize(Roles = "Voter")]
     public class UserController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -24,6 +25,7 @@ namespace ChainVote.Controllers
             _context = context;
         }
 
+        // Edit Email Functionality
         [HttpGet]
         public IActionResult EditEmail() => View();
 
@@ -38,6 +40,7 @@ namespace ChainVote.Controllers
             if (user == null)
                 return NotFound();
 
+            // Validate user password
             var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!passwordValid)
             {
@@ -45,14 +48,14 @@ namespace ChainVote.Controllers
                 return View(model);
             }
 
-            // 4. Check if the new email is the same as the current one
+            // Prevent using the same email
             if (model.NewEmail.Trim().ToLower() == user.Email.Trim().ToLower())
             {
                 TempData["Error"] = "You cannot use the same email address.";
                 return View(model);
             }
 
-            // 5. Check if the new email is already in use by another account
+            // Check if new email is already taken
             var existingUser = await _userManager.FindByEmailAsync(model.NewEmail);
             if (existingUser != null)
             {
@@ -60,6 +63,7 @@ namespace ChainVote.Controllers
                 return View(model);
             }
 
+            // Generate and apply email change token
             var token = await _userManager.GenerateChangeEmailTokenAsync(user, model.NewEmail);
             var result = await _userManager.ChangeEmailAsync(user, model.NewEmail, token);
 
@@ -70,12 +74,14 @@ namespace ChainVote.Controllers
                 return RedirectToAction("EditEmail", "User");
             }
 
+            // Display any errors encountered during update
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error.Description);
 
             return View(model);
         }
 
+        // Edit Password Functionality
         [HttpGet]
         public IActionResult EditPassword() => View();
 
@@ -90,20 +96,21 @@ namespace ChainVote.Controllers
             if (user == null)
                 return NotFound();
 
-            // Check if new password is the same as current password
+            // Prevent using the same password
             if (model.CurrentPassword == model.NewPassword)
             {
                 TempData["Error"] = "New password cannot be the same as the current password.";
                 return View(model);
             }
 
-            // Check password strength
+            // Validate password strength
             if (!IsStrongPassword(model.NewPassword))
             {
                 TempData["Error"] = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.";
                 return View(model);
             }
 
+            // Attempt to change the password
             var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
 
             if (result.Succeeded)
@@ -113,13 +120,14 @@ namespace ChainVote.Controllers
                 return RedirectToAction("EditPassword", "User");
             }
 
+            // Display any errors encountered during update
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error.Description);
 
             return View(model);
         }
 
-        // Helper method to check password strength
+        // Helper method to evaluate password strength
         private bool IsStrongPassword(string password)
         {
             var hasMinimum8Chars = password.Length >= 8;
@@ -131,10 +139,7 @@ namespace ChainVote.Controllers
             return hasMinimum8Chars && hasUpperChar && hasLowerChar && hasNumber && hasSpecialChar;
         }
 
-
-        // ====================
-        // Delete Account
-        // ====================
+        // Delete Account Functionality
         [HttpGet]
         public IActionResult DeleteAccount() => View();
 
@@ -149,6 +154,7 @@ namespace ChainVote.Controllers
             if (user == null)
                 return NotFound();
 
+            // Validate password before deletion
             var passwordValid = await _userManager.CheckPasswordAsync(user, model.Password);
             if (!passwordValid)
             {
@@ -156,6 +162,7 @@ namespace ChainVote.Controllers
                 return View(model);
             }
 
+            // Attempt to delete the account
             var result = await _userManager.DeleteAsync(user);
             if (result.Succeeded)
             {
@@ -163,19 +170,21 @@ namespace ChainVote.Controllers
                 return RedirectToAction("Index", "DefaultView");
             }
 
+            // Display any errors encountered during deletion
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error.Description);
 
             return View(model);
         }
 
-        // ====================
-        // Settings Page
-        // ====================
+        // =============================
+        // User Settings Page
+        // =============================
+
         [HttpGet]
         public IActionResult Settings()
         {
-            return View(); // User settings page
+            return View();
         }
     }
 }

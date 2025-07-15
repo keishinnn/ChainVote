@@ -3,27 +3,48 @@
     Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
 }
 
+<!-- Main container for the elections statistics page -->
 <div class="container py-2">
-    <h2 class="mb-4 fw-bold text-dark"><i class="bi bi-bar-chart-line me-2"></i>Elections Statistics</h2>
 
-    <!-- In Progress Elections -->
-    <h4 class="text-primary mb-3"><i class="bi bi-clock-history me-2"></i>In Progress</h4>
+    <!-- Page heading with icon and title -->
+    <h2 class="mb-4 fw-bold text-dark">
+        <i class="bi bi-bar-chart-line me-2"></i>Elections Statistics
+    </h2>
+
+    <!-- Section for elections currently in progress -->
+    <h4 class="text-primary mb-3">
+        <i class="bi bi-clock-history me-2"></i>In Progress
+    </h4>
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
+        <!-- Loop through in-progress election summaries -->
         @foreach (var summary in Model.InProgressElections)
         {
             var eventItem = summary.Event;
+
             <div class="col">
+                <!-- Card for each in-progress election with shadow and fade-in animation -->
                 <div class="card border-0 shadow-sm h-100 animate-fadein">
                     <div class="card-body">
+                        <!-- Election name displayed prominently -->
                         <h5 class="card-title text-primary">@eventItem.EventName</h5>
-                        <p class="text-muted mb-1"><i class="bi bi-calendar-event me-1"></i>Started: @eventItem.StartDate.ToString("MMMM dd, yyyy")</p>
-                        <span class="badge bg-success mb-3"><i class="bi bi-play-circle me-1"></i>In Progress</span>
 
+                        <!-- Election start date with calendar icon -->
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-calendar-event me-1"></i>Started: @eventItem.StartDate.ToString("MMMM dd, yyyy")
+                        </p>
+
+                        <!-- Badge indicating election is currently in progress -->
+                        <span class="badge bg-success mb-3">
+                            <i class="bi bi-play-circle me-1"></i>In Progress
+                        </span>
+
+                        <!-- Container for live election statistics, to be dynamically filled -->
                         <div id="electionStatsContainer-@eventItem.Id" class="border-top pt-3">
                             <h6 class="text-secondary fw-semibold mb-2">Live Stats</h6>
-                            <!-- Dynamic content -->
+                            <!-- Placeholder for dynamic content loaded via JavaScript -->
                         </div>
 
+                        <!-- Button linking to detailed view of election statistics -->
                         <div class="text-end mt-3">
                             <a asp-controller="DefaultView" asp-action="DefaultViewElectionStats" asp-route-eventId="@eventItem.Id" class="btn btn-outline-primary btn-sm">
                                 View Details
@@ -35,19 +56,34 @@
         }
     </div>
 
-    <!-- Completed Elections -->
-    <h4 class="text-secondary mb-3"><i class="bi bi-check2-circle me-2"></i>Completed</h4>
+    <!-- Section for elections that have been completed -->
+    <h4 class="text-secondary mb-3">
+        <i class="bi bi-check2-circle me-2"></i>Completed
+    </h4>
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        <!-- Loop through completed election summaries -->
         @foreach (var summary in Model.CompletedElections)
         {
             var eventItem = summary.Event;
+
             <div class="col">
+                <!-- Card for completed elections with border and shadow -->
                 <div class="card border border-secondary shadow-sm h-100 animate-fadein">
                     <div class="card-body">
+                        <!-- Election name displayed prominently -->
                         <h5 class="card-title text-dark">@eventItem.EventName</h5>
-                        <p class="text-muted mb-1"><i class="bi bi-calendar-check me-1"></i>Ended: @eventItem.EndDate.ToString("MMMM dd, yyyy")</p>
-                        <span class="badge bg-secondary mb-3"><i class="bi bi-check-circle me-1"></i>Completed</span>
 
+                        <!-- Election end date with calendar check icon -->
+                        <p class="text-muted mb-1">
+                            <i class="bi bi-calendar-check me-1"></i>Ended: @eventItem.EndDate.ToString("MMMM dd, yyyy")
+                        </p>
+
+                        <!-- Badge indicating election is completed -->
+                        <span class="badge bg-secondary mb-3">
+                            <i class="bi bi-check-circle me-1"></i>Completed
+                        </span>
+
+                        <!-- Button linking to view the election results -->
                         <div class="text-end mt-3">
                             <a asp-controller="DefaultView" asp-action="DefaultViewElectionResults" asp-route-eventId="@eventItem.Id" class="btn btn-outline-success btn-sm">
                                 View Results
@@ -61,16 +97,26 @@
 </div>
 
 @section Scripts {
+    <!-- Load jQuery library for DOM manipulation and AJAX -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
     <script>
         $(document).ready(function () {
+            // Find all elements with IDs starting with "electionStatsContainer-"
             $('[id^="electionStatsContainer-"]').each(function () {
+                // Extract event ID from the container ID
                 const containerId = $(this).attr('id');
                 const eventId = containerId.split('-')[1];
+
+                // Fetch live stats immediately and then every 10 seconds
                 fetchElectionStats(eventId);
                 setInterval(() => fetchElectionStats(eventId), 10000);
             });
         });
+
+        // Function to fetch live election stats via AJAX (implementation assumed elsewhere)
+        function fetchElectionStats(eventId) {
+            // AJAX call logic to update the container with current stats goes here
+        }
     </script>
 }
-

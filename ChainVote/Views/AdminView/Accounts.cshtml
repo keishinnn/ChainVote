@@ -3,10 +3,13 @@
     Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
 }
 
+<!-- Page heading -->
 <h2 class="mb-4">Registered Accounts</h2>
 
+<!-- Hidden field storing the AJAX URL for fetching registered accounts -->
 <input type="hidden" id="getAccountsUrl" value="@Url.Action("GetAccounts", "RegisteredAccounts")" />
 
+<!-- Table for displaying registered user accounts -->
 <table id="accountsTable" class="table table-bordered table-hover shadow-sm">
     <thead class="table-light">
         <tr>
@@ -19,20 +22,29 @@
         </tr>
     </thead>
     <tbody>
+        <!-- Table body will be populated via AJAX -->
     </tbody>
 </table>
 
 @section Scripts {
     <script>
+        // Initialize DataTable on page load
         $(document).ready(function () {
             $('#accountsTable').DataTable({
+                // Enable processing indicator
                 "processing": true,
+
+                // Use client-side processing
                 "serverSide": false,
+
+                // Configure AJAX request for fetching data
                 "ajax": {
                     "url": '@Url.Action("GetAccounts", "RegisteredAccounts")',
                     "type": 'GET',
-                    "dataSrc": "data"
+                    "dataSrc": "data" // Property containing array of data
                 },
+
+                // Define columns to map the data
                 "columns": [
                     { "data": "studentId" },
                     { "data": "fullName" },

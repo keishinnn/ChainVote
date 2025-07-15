@@ -1,45 +1,64 @@
-﻿@{    
+﻿@{
+    // Set the page title and apply the user-specific layout
     ViewData["Title"] = "Elections";
     Layout = "~/Views/Shared/_UserViewLayout.cshtml";
 }
 
+<!-- Main container for the elections view -->
 <div class="container mt-4">
-    <h2 class="mb-4"><i class="bi bi-check2-square me-2"></i>Cast Your Vote</h2>
 
+    <!-- Page heading with icon -->
+    <h2 class="mb-4">
+        <i class="bi bi-check2-square me-2"></i>Cast Your Vote
+    </h2>
+
+    <!-- Dropdown for selecting an available election event -->
     <div class="mb-3">
         <label for="eventDropdown" class="form-label">Select Election Event</label>
         <select id="eventDropdown" class="form-select">
             <option value="">-- Select Election --</option>
         </select>
     </div>
+
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Load available elections
+
+            // Fetch and populate the dropdown with available elections from the server
             $.get('/VoteRecords/GetAvailableElections', function (data) {
                 if (data.length === 0) {
+                    // If no elections are available, display a disabled option
                     $('#eventDropdown').append('<option disabled>No available elections</option>');
                     return;
                 }
+
+                // Append each available election as an option in the dropdown
                 data.forEach(event => {
                     $('#eventDropdown').append(`<option value="${event.id}">${event.eventName}</option>`);
                 });
             });
 
+            // Handle change event when a user selects an election
             $('#eventDropdown').on('change', function () {
                 const eventId = $(this).val();
+
+                // If no valid event selected, exit
                 if (!eventId) return;
 
+                // Check if the user has already voted in the selected event
                 $.get(`/VoteRecords/HasVoted?eventId=${eventId}`, function (res) {
                     if (res.alreadyVoted) {
+                        // Alert the user if they already voted
                         alert("You have already voted in this event.");
                     } else {
+                        // Redirect to the voting form if not yet voted
                         window.location.href = `/VoteRecords/VoteForm?eventId=${eventId}`;
                     }
                 });
             });
+
         });
     </script>
 }

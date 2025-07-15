@@ -5,8 +5,10 @@
 
 <h2 class="mb-4">Manage Voters</h2>
 
+<!-- Hidden input to store the URL endpoint for fetching voter accounts via AJAX -->
 <input type="hidden" id="getAccountsUrl" value="@Url.Action("GetAccounts", "RegisteredAccounts")" />
 
+<!-- Table to display voter accounts, will be populated dynamically by DataTables -->
 <table id="accountsTable" class="table table-bordered table-hover shadow-sm">
     <thead class="table-light">
         <tr>
@@ -19,27 +21,29 @@
         </tr>
     </thead>
     <tbody>
+        @* Body will be dynamically filled by DataTables via AJAX *@
     </tbody>
 </table>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // Initialize DataTable with AJAX source to load voter accounts dynamically
             $('#accountsTable').DataTable({
-                "processing": true,
-                "serverSide": false,
-                "ajax": {
-                    "url": '@Url.Action("GetAccounts", "RegisteredAccounts")',
-                    "type": 'GET',
-                    "dataSrc": "data"
+                processing: true,        // Show processing indicator while loading data
+                serverSide: false,       // Data is fetched client-side (no server-side pagination)
+                ajax: {
+                    url: '@Url.Action("GetAccounts", "RegisteredAccounts")', // AJAX endpoint for voter accounts data
+                    type: 'GET',
+                    dataSrc: "data"       // Specify the property in the JSON response holding the data array
                 },
-                "columns": [
-                    { "data": "studentId" },
-                    { "data": "fullName" },
-                    { "data": "course" },
-                    { "data": "yearLevel" },
-                    { "data": "section" },
-                    { "data": "email" }
+                columns: [
+                    { data: "studentId" },    // Map student ID property
+                    { data: "fullName" },     // Map full name property
+                    { data: "course" },       // Map course property
+                    { data: "yearLevel" },    // Map year level property
+                    { data: "section" },      // Map section property
+                    { data: "email" }         // Map email property
                 ]
             });
         });

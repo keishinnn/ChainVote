@@ -3,14 +3,20 @@
     Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
 }
 
+<!-- Main section containing the About Project content -->
 <section class="py-5">
     <div class="container text-center animate-fadein">
+        <!-- Page heading -->
         <h1 class="display-5 fw-bold mb-4">About the Project</h1>
+
+        <!-- Brief description of the ChainVote Voting System -->
         <p class="lead text-muted mb-4">
             The <strong>ChainVote Voting System</strong> is a modern digital platform built with ASP.NET Core MVC and SQL Server, designed to make voting in academic institutions secure, transparent, and efficient.
         </p>
 
+        <!-- Features section displayed as three cards -->
         <div class="row g-4 mt-5">
+            <!-- Feature 1: Secure Voting -->
             <div class="col-md-4">
                 <div class="card shadow h-100 border-0 animate-slideup">
                     <div class="card-body">
@@ -19,6 +25,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Feature 2: Role-Based Access -->
             <div class="col-md-4">
                 <div class="card shadow h-100 border-0 animate-slideup">
                     <div class="card-body">
@@ -27,6 +35,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Feature 3: Real-Time Insights -->
             <div class="col-md-4">
                 <div class="card shadow h-100 border-0 animate-slideup">
                     <div class="card-body">
@@ -37,8 +47,9 @@
             </div>
         </div>
 
+        <!-- Call-to-action button linking to Elections page -->
         <div class="mt-5">
-            <a href="/DefaultView/Elections" class="btn btn-primary btn-lg px-4">Explore Elections</a>
+            <a href="/DefaultView/Index" class="btn btn-primary btn-lg px-4">Explore Elections</a>
         </div>
     </div>
 </section>

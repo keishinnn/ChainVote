@@ -1,24 +1,29 @@
 ﻿<h2 class="mb-4">Elections Statistics</h2>
 
 <div class="container py-2 ms-2">
-    <!-- In Progress Elections -->
+    <!-- Section for elections currently in progress -->
     <h4 class="text-primary mb-3"><i class="bi bi-clock-history me-2"></i>In Progress</h4>
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
         @foreach (var summary in Model.InProgressElections)
         {
             var eventItem = summary.Event;
             <div class="col">
+                <!-- Card for individual in-progress election -->
                 <div class="card border-0 shadow-sm h-100 animate-fadein">
                     <div class="card-body">
+                        <!-- Election title -->
                         <h5 class="card-title text-primary">@eventItem.EventName</h5>
+                        <!-- Start date display -->
                         <p class="text-muted mb-1"><i class="bi bi-calendar-event me-1"></i>Started: @eventItem.StartDate.ToString("MMMM dd, yyyy")</p>
+                        <!-- Status badge indicating election is ongoing -->
                         <span class="badge bg-success mb-3"><i class="bi bi-play-circle me-1"></i>In Progress</span>
 
+                        <!-- Container for live election stats; content loaded dynamically -->
                         <div id="electionStatsContainer-@eventItem.Id" class="border-top pt-3">
                             <h6 class="text-secondary fw-semibold mb-2">Live Stats</h6>
-                            <!-- Dynamic content -->
                         </div>
 
+                        <!-- Button linking to detailed election statistics page -->
                         <div class="text-end mt-3">
                             <a asp-controller="ElectionStats" asp-action="ViewElectionStats" asp-route-eventId="@eventItem.Id" class="btn btn-outline-primary btn-sm">
                                 View Details
@@ -30,19 +35,24 @@
         }
     </div>
 
-    <!-- Completed Elections -->
+    <!-- Section for elections that have been completed -->
     <h4 class="text-secondary mb-3"><i class="bi bi-check2-circle me-2"></i>Completed</h4>
     <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
         @foreach (var summary in Model.CompletedElections)
         {
             var eventItem = summary.Event;
             <div class="col">
+                <!-- Card for individual completed election -->
                 <div class="card border border-secondary shadow-sm h-100 animate-fadein">
                     <div class="card-body">
+                        <!-- Election title -->
                         <h5 class="card-title text-dark">@eventItem.EventName</h5>
+                        <!-- End date display -->
                         <p class="text-muted mb-1"><i class="bi bi-calendar-check me-1"></i>Ended: @eventItem.EndDate.ToString("MMMM dd, yyyy")</p>
+                        <!-- Status badge indicating election is finished -->
                         <span class="badge bg-secondary mb-3"><i class="bi bi-check-circle me-1"></i>Completed</span>
 
+                        <!-- Button linking to election results page -->
                         <div class="text-end mt-3">
                             <a asp-controller="ElectionStats" asp-action="ElectionResults" asp-route-eventId="@eventItem.Id" class="btn btn-outline-success btn-sm">
                                 View Results
@@ -59,6 +69,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
         $(document).ready(function () {
+            // Iterate through each live stats container and fetch election stats initially
+            // Then set an interval to update the stats every 10 seconds (10000 ms)
             $('[id^="electionStatsContainer-"]').each(function () {
                 const containerId = $(this).attr('id');
                 const eventId = containerId.split('-')[1];
@@ -66,5 +78,20 @@
                 setInterval(() => fetchElectionStats(eventId), 10000);
             });
         });
+
+        // Function to fetch live election stats for given eventId and update corresponding container
+        function fetchElectionStats(eventId) {
+            $.ajax({
+                url: '@Url.Action("GetLiveStats", "ElectionStats")', // Adjust this to your actual controller/action
+                method: 'GET',
+                data: { eventId: eventId },
+                success: function (data) {
+                    $('#electionStatsContainer-' + eventId).html(data);
+                },
+                error: function () {
+                    console.warn('Failed to fetch live stats for event ' + eventId);
+                }
+            });
+        }
     </script>
 }

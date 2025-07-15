@@ -23,12 +23,13 @@ namespace ChainVote.Controllers.CandidatesController
             _userManager = userManager;
         }
 
-        // Method to get eligible candidates
+        // Returns all deployed candidates with their profile and election details
         [HttpGet]
         public IActionResult GetCandidates()
         {
+            // Fetch candidates and include related user info
             var candidates = _context.CandidatesData
-                .Include(c => c.ApplicationUser) // To load the related user data
+                .Include(c => c.ApplicationUser)
                 .Select(c => new
                 {
                     studentId = c.ApplicationUser.StudentId,
@@ -40,30 +41,32 @@ namespace ChainVote.Controllers.CandidatesController
                 })
                 .ToList();
 
+            // Return candidate data in JSON format
             return Json(new { data = candidates });
         }
 
-        // Method to get eligible (non-candidate, non-admin) users
+        // Returns users eligible to be deployed as candidates (non-admins and not yet deployed)
         [HttpGet]
         public IActionResult GetReadyForDeployment()
         {
-            // Get all user IDs already in CandidatesData
+            // Get IDs of users who are already candidates
             var candidateUserIds = _context.CandidatesData
                 .Select(c => c.ApplicationUserId)
                 .ToList();
 
-            // Get all user IDs with the "Admin" role
+            // Get the role ID for the "Admin" role
             var adminRoleId = _context.Roles
                 .Where(r => r.Name == "Admin")
                 .Select(r => r.Id)
                 .FirstOrDefault();
 
+            // Get IDs of users who are admins
             var adminUserIds = _context.UserRoles
                 .Where(ur => ur.RoleId == adminRoleId)
                 .Select(ur => ur.UserId)
                 .ToList();
 
-            // Filter users: exclude both admins and those already in CandidatesData
+            // Select users who are not admins and not already candidates
             var eligibleCandidates = _context.Users
                 .Where(u => !adminUserIds.Contains(u.Id) && !candidateUserIds.Contains(u.Id))
                 .AsEnumerable()
@@ -78,29 +81,30 @@ namespace ChainVote.Controllers.CandidatesController
                 })
                 .ToList();
 
+            // Return eligible users in JSON format
             return Json(new { data = eligibleCandidates });
         }
 
-
+        // Deploys a candidate to a specified position if not already assigned
         [HttpPost]
         public async Task<IActionResult> DeployCandidate(string studentId, int positionId)
         {
+            // Find the user based on student ID
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.StudentId == studentId);
-
             if (user == null)
                 return NotFound();
 
-            // Check if already a candidate
+            // Check if the user is already a candidate
             var exists = await _context.CandidatesData.AnyAsync(c => c.ApplicationUserId == user.Id);
             if (exists)
                 return BadRequest("User is already a candidate.");
 
-            // Check if position is already taken
+            // Ensure that the position is not already taken
             var positionTaken = await _context.CandidatesData.AnyAsync(c => c.PositionId == positionId);
             if (positionTaken)
                 return BadRequest("This position is already assigned to another candidate.");
 
-            // Create candidate
+            // Add the candidate to the database
             var candidate = new CandidatesData
             {
                 ApplicationUserId = user.Id,
@@ -110,36 +114,37 @@ namespace ChainVote.Controllers.CandidatesController
             _context.CandidatesData.Add(candidate);
             await _context.SaveChangesAsync();
 
+            // Return success response
             return Ok();
         }
 
-
+        // Removes a deployed candidate based on student ID
         [HttpPost]
         public async Task<IActionResult> DeleteCandidate([FromBody] string studentId)
         {
             if (string.IsNullOrEmpty(studentId))
                 return BadRequest("Invalid student ID.");
 
-            // Find the user by student ID
+            // Find the user using student ID
             var user = await _userManager.Users.FirstOrDefaultAsync(u => u.StudentId == studentId);
             if (user == null)
                 return NotFound("User not found.");
 
-            // Find the deployed candidate associated with that user
+            // Find candidate record using the user's ID
             var candidate = await _context.CandidatesData
                 .FirstOrDefaultAsync(c => c.ApplicationUserId == user.Id);
-
             if (candidate == null)
                 return NotFound("Candidate not found or not deployed.");
 
-            // Remove the candidate
+            // Remove candidate from database
             _context.CandidatesData.Remove(candidate);
             await _context.SaveChangesAsync();
 
+            // Return confirmation response
             return Ok("Candidate removed successfully.");
         }
 
-        // Controller Action for fetching organizations
+        // Returns all organizations with their IDs and names
         public IActionResult GetOrganizations()
         {
             var organizations = _context.OrganizationsData
@@ -149,17 +154,17 @@ namespace ChainVote.Controllers.CandidatesController
             return Json(organizations);
         }
 
+        // Returns positions within an organization that have not been assigned to a candidate
         public IActionResult GetAvailablePositions(int organizationId)
         {
-            // Get all positions for the organization
+            // Get all unassigned positions for the given organization
             var positions = _context.OrganizationPosition
                 .Where(p => p.OrganizationId == organizationId)
-                .Where(p => !_context.CandidatesData.Any(c => c.PositionId == p.Id)) // Position not assigned
+                .Where(p => !_context.CandidatesData.Any(c => c.PositionId == p.Id))
                 .Select(p => new { p.Id, p.Title })
                 .ToList();
 
             return Json(positions);
         }
-
     }
 }

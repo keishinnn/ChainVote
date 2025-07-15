@@ -4,13 +4,11 @@ namespace ChainVote.Models.Authentication
 {
     public class LoginViewModel
     {
-        [Display(Name = "Student ID or Email")]
-        [Required(ErrorMessage = "Email or Student ID is required")]
+        [Required(ErrorMessage = "Student ID or Email is required.")]
         public string Username { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Password is required.")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
-
     }
 }

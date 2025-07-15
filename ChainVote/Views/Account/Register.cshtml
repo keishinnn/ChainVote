@@ -1,14 +1,17 @@
 ﻿@model ChainVote.Models.Authentication.RegisterViewModel
 
 @{
+    // Set the page title and layout
     ViewData["Title"] = "Register";
     Layout = "~/Views/Shared/_DefaultViewLayout.cshtml";
 }
 
+<!-- Main container centered vertically and horizontally -->
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
     <div class="card shadow p-4 mt-1" style="max-width: 800px; width: 100%;">
         <h3 class="text-center mb-4">Register</h3>
 
+        @* Display error message if registration failed *@
         @if (TempData["Error"] != null)
         {
             <div class="alert alert-danger">
@@ -16,6 +19,7 @@
             </div>
         }
 
+        @* Display success message if registration succeeded *@
         @if (TempData["Success"] != null)
         {
             <div class="alert alert-success">
@@ -23,10 +27,10 @@
             </div>
         }
 
+        <!-- Begin registration form -->
         <form method="post" asp-action="Register" asp-controller="Account">
-            @Html.AntiForgeryToken()
-
-            <!-- Line 1 -->
+            @Html.AntiForgeryToken() <!-- Protect against CSRF -->
+            <!-- First row: Student ID, Last Name, First Name -->
             <div class="row mb-3">
                 <div class="col-md-4 form-floating mb-3 mb-md-0">
                     <input asp-for="StudentId" class="form-control" placeholder="Student ID" />
@@ -45,7 +49,7 @@
                 </div>
             </div>
 
-            <!-- Line 2 -->
+            <!-- Second row: Course, Year Level, Section -->
             <div class="row mb-3">
                 <div class="col-md-4 form-floating mb-3 mb-md-0">
                     <select asp-for="Course" class="form-select" aria-label="Course">
@@ -83,14 +87,14 @@
                 </div>
             </div>
 
-            <!-- Line 3 -->
+            <!-- Email input field -->
             <div class="form-floating mb-3">
                 <input asp-for="Email" class="form-control" placeholder="Email" />
                 <label asp-for="Email">Email</label>
                 <span asp-validation-for="Email" class="text-danger small"></span>
             </div>
 
-            <!-- Line 4 -->
+            <!-- Password and Confirm Password input fields -->
             <div class="row mb-3">
                 <div class="col-md-6 form-floating mb-3 mb-md-0">
                     <input asp-for="Password" class="form-control" placeholder="Password" type="password" />
@@ -104,11 +108,13 @@
                 </div>
             </div>
 
-            <!-- Hidden Role -->
+            <!-- Hidden input for setting default role -->
             <input type="hidden" asp-for="Role" value="Voter" />
 
+            <!-- Submit button -->
             <button type="submit" class="btn btn-primary w-100 mt-2">Register</button>
 
+            <!-- Redirect to login page -->
             <div class="text-center mt-3">
                 <a href="/Account/Login">Already have an account? Login</a>
             </div>
@@ -116,6 +122,7 @@
     </div>
 </div>
 
+<!-- Load validation scripts -->
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

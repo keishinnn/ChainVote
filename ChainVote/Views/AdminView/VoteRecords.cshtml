@@ -1,6 +1,5 @@
 ﻿@model List<ChainVote.Models.ViewModels.VoteRecordViewModel>
 
-
 @{
     ViewData["Title"] = "Vote Records";
     Layout = "~/Views/Shared/_AdminViewLayout.cshtml";
@@ -8,6 +7,7 @@
 
 <h2 class="text-2xl font-bold mb-4">Vote Records</h2>
 
+<!-- Table displaying all vote records -->
 <table id="voteRecordsTable" class="display nowrap w-full">
     <thead>
         <tr>
@@ -20,6 +20,7 @@
         </tr>
     </thead>
     <tbody>
+        @* Loop through each vote record and display its details *@
         @foreach (var record in Model)
         {
             <tr>
@@ -28,13 +29,14 @@
                 <td>@record.PositionName</td>
                 <td>@record.OrganizationName</td>
                 <td>@record.EventName</td>
-                <td>@record.VotedAt.ToLocalTime().ToString("yyyy-MM-dd hh:mm tt")</td>
+                <td>@record.VotedAt.ToLocalTime().ToString("yyyy-MM-dd hh:mm tt")</td> <!-- Display vote timestamp in local time -->
             </tr>
         }
     </tbody>
 </table>
 
 @section Scripts {
+    <!-- DataTables JS and CSS dependencies for enhanced table features and responsiveness -->
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
@@ -42,6 +44,7 @@
 
     <script>
         $(document).ready(function () {
+            // Initialize DataTables on the vote records table with responsive layout enabled
             $('#voteRecordsTable').DataTable({
                 responsive: true
             });
